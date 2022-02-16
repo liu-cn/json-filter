@@ -10,7 +10,7 @@ func (t *NTree) SetData(key string, el interface{}) {
 TakePointerValue: //取指针的指
 	switch typeOf.Kind() {
 	case reflect.Pointer: //如果是指针类型则取地址重新判断类型
-		typeOf = typeOf.Elem() //if el类型为int类型的指针(*int) 则此操作相当于*el,取指
+		typeOf = typeOf.Elem() //if el类型为int类型的指针(*int) 则此操作相当于*el,取值
 		goto TakePointerValue
 	case reflect.Struct:
 		for i := 0; i < typeOf.NumField(); i++ {

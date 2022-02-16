@@ -3,7 +3,7 @@ package main
 import "strings"
 
 type ExampleModel struct {
-	Name string `json:"name,omitempty,select(),omit(chat,profile,article)"`
+	Name string `json:"name,omitempty,select(req|res),omit(chat|profile|article)"`
 }
 type Tag struct {
 

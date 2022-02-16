@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	_ "encoding/json"
 )
 
 type NTree struct {
