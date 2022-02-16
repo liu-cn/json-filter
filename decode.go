@@ -7,7 +7,7 @@ import (
 func (t *NTree) SetData(key string, el interface{}) {
 	typeOf := reflect.TypeOf(el)
 	valueOf := reflect.ValueOf(el)
-TakePointerValue: //取指针的指
+TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Pointer: //如果是指针类型则取地址重新判断类型
 		typeOf = typeOf.Elem() //if el类型为int类型的指针(*int) 则此操作相当于*el,取值
