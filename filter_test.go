@@ -7,7 +7,8 @@ import (
 
 type Book struct {
 	Page  int    `json:"page,select(req|res|article)"`
-	Price string `json:"price,select(req|res|article)"`
+	Price string `json:"price,select(res|article)"`
+	Title string `json:"title"`
 }
 
 type User struct {
@@ -31,12 +32,14 @@ func TestFilter(t *testing.T) {
 		B: &Book{
 			Price: "18.8",
 			Page:  19,
+			Title: "c++从研发到脱发",
 		},
 	}
-	fmt.Println(SelectMarshal("req", &model))
+	fmt.Println(SelectMarshal("req", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
 
+	//
 	//=== RUN   TestFilter
-	//{"B":{"page":19,"price":"18.8"},"age":20,"hobby":"coding","name":"boyan"}
+	//{"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
 	//--- PASS: TestFilter (0.00s)
 	//PASS
 	//_ = pkg.SelectMarshal("req", model)
