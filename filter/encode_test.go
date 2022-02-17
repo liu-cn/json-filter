@@ -5,20 +5,20 @@ import (
 	"testing"
 )
 
-type Book struct {
-	Page  int    `json:"page,select(req|res|article)"`
-	Price string `json:"price,select(res|article)"`
-	Title string `json:"title"`
+type User struct {
+	Name string `json:"name,select(justName|req|foo)"`
+	Age  int    `json:"select(req|res|article)"`
+
+	LongName string `json:"long_name,select(foo)"`
+	Hobby    string `json:"hobby,select(req|res|foo)"`
+	Books    []Book `json:"books,select()"`
+	B        *Book  `json:"b,select(req|foo)"`
 }
 
-type User struct {
-	Name string `json:"name,select(2|justOne|req|res|article)"`
-	Age  int    `json:"select(2|req|res|article)"`
-
-	LongName string `json:"long_name,select(2)"`
-	Hobby    string `json:"hobby,select(2|req|res|article)"`
-	Books    []Book `json:"books,select(article)"`
-	B        *Book  `json:"b,select(req|article)"`
+type Book struct {
+	Page  int    `json:"page,select(req|foo)"`
+	Price string `json:"price,select(res|foo)"`
+	Title string `json:"title"`
 }
 
 func TestFilter(t *testing.T) {
@@ -37,16 +37,14 @@ func TestFilter(t *testing.T) {
 			Title: "c++从研发到脱发",
 		},
 	}
-	//fmt.Println(SelectMarshal("req", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
-	//fmt.Println(SelectMarshal("justOne", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
-	fmt.Println(SelectMarshal("2", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
+	fmt.Println(SelectMarshal("req", &model))
+	//---->>output 输出结果： {"Age":20,"b":{"page":19},"hobby":"coding","name":"boyan"}
 
-	//
-	//=== RUN   TestFilter
-	//{"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
-	//--- PASS: TestFilter (0.00s)
-	//PASS
-	//_ = pkg.SelectMarshal("req", model)
+	fmt.Println(SelectMarshal("justName", &model))
+	//---->>output 输出结果： {"name":"boyan"}
+
+	fmt.Println(SelectMarshal("foo", &model))
+	//---->>output 输出结果： {"b":{"page":19,"price":"18.8"},"hobby":"coding","long_name":"long name","name":"boyan"}
 }
 
 func BenchmarkFilter(b *testing.B) {
