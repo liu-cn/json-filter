@@ -12,11 +12,13 @@ type Book struct {
 }
 
 type User struct {
-	Name  string `json:"name,select(2|justOne|req|res|article)"`
-	Age   int    `json:"age,select(2|req|res|article)"`
-	Hobby string `json:"hobby,select(req|res|article)"`
-	Books []Book `json:"books,select(article)"`
-	B     *Book  `json:"b,select(req|article)"`
+	Name string `json:"name,select(2|justOne|req|res|article)"`
+	Age  int    `json:"select(2|req|res|article)"`
+
+	LongName string `json:"long_name,select(2)"`
+	Hobby    string `json:"hobby,select(2|req|res|article)"`
+	Books    []Book `json:"books,select(article)"`
+	B        *Book  `json:"b,select(req|article)"`
 }
 
 func TestFilter(t *testing.T) {
@@ -28,6 +30,7 @@ func TestFilter(t *testing.T) {
 			{Page: 10, Price: "199.9"},
 			{Page: 100, Price: "1999.9"},
 		},
+		LongName: "long name",
 		B: &Book{
 			Price: "18.8",
 			Page:  19,
@@ -36,7 +39,7 @@ func TestFilter(t *testing.T) {
 	}
 	//fmt.Println(SelectMarshal("req", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
 	//fmt.Println(SelectMarshal("justOne", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
-	fmt.Println(SelectMarshal("req", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
+	fmt.Println(SelectMarshal("2", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
 
 	//
 	//=== RUN   TestFilter
