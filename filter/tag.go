@@ -1,6 +1,8 @@
 package filter
 
-import "strings"
+import (
+	"strings"
+)
 
 type ExampleModel struct {
 	Name string `json:"name,omitempty,select(req|res),omit(chat|profile|article)"`
@@ -25,7 +27,16 @@ func NewSelectTag(tag, selectScene, fieldName string) Tag {
 		IsOmitField: true,
 	}
 	tags := strings.Split(tag, ",")
-	tagEl.FieldName = tags[0]
+	tagEl.FieldName = fieldName
+
+	if len(tags[0]) < 7 {
+		tagEl.FieldName = tags[0]
+	} else {
+		if tags[0][0:7] != "select(" {
+			tagEl.FieldName = tags[0]
+		}
+	}
+
 	for _, s := range tags {
 		if strings.HasPrefix(s, "select(") {
 			selectStr := s[7 : len(s)-1]

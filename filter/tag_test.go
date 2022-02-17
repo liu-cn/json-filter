@@ -88,18 +88,19 @@ func BenchmarkTags(b *testing.B) {
 		}
 	})
 
-	//goos: windows
+	//goos: darwin
 	//goarch: amd64
-	//pkg: filter
-	//cpu: Intel(R) Core(TM) i5-6400 CPU @ 2.70GHz
-	//	BenchmarkTags
-	//	BenchmarkTags/select
-	//	BenchmarkTags/select-4           4147592               295.9 ns/op
-	//	BenchmarkTags/select-f
-	//	BenchmarkTags/select-f-4         4163122               287.8 ns/op
-	//	BenchmarkTags/omit
-	//	BenchmarkTags/omit-4             3761622               306.6 ns/op
-	//	BenchmarkTags/omit-f
-	//	BenchmarkTags/omit-f-4           3889572               301.8 ns/op
-	//	PASS
+	//pkg: filter/filter
+	//cpu: Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
+	//BenchmarkTags
+	//BenchmarkTags/select
+	//BenchmarkTags/select-16         	 5682181	       205.6 ns/op
+	//BenchmarkTags/select-f
+	//BenchmarkTags/select-f-16       	 5831988	       197.4 ns/op
+	//BenchmarkTags/omit
+	//BenchmarkTags/omit-16           	 5868252	       203.6 ns/op
+	//BenchmarkTags/omit-f
+	//BenchmarkTags/omit-f-16         	 5985828	       204.8 ns/op
+	//PASS
+
 }

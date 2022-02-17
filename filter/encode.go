@@ -28,8 +28,6 @@ TakePointerValue: //取指针的值
 			if valueOf.Kind() == reflect.Pointer {
 				valueOf = valueOf.Elem()
 			}
-
-			//tree := NewFieldNodeTree(typeOf.Field(i).Name)
 			tree := NewFieldNodeTree(tag.FieldName)
 			if valueOf.Field(i).Kind() == reflect.Pointer {
 				tree.SetData(tag.FieldName, selectScene, valueOf.Field(i).Elem().Interface())
