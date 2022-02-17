@@ -1,10 +1,10 @@
-package main
+package filter
 
 import (
 	"reflect"
 )
 
-func (t *NTree) SetData(key string, el interface{}) {
+func (t *FieldNodeTree) SetData(key, selectScene string, el interface{}) {
 	typeOf := reflect.TypeOf(el)
 	valueOf := reflect.ValueOf(el)
 TakePointerValue: //取指针的值
@@ -14,7 +14,6 @@ TakePointerValue: //取指针的值
 		goto TakePointerValue
 	case reflect.Struct:
 		for i := 0; i < typeOf.NumField(); i++ {
-			tree := NewNTree(typeOf.Field(i).Name)
 			jsonTag, ok := typeOf.Field(i).Tag.Lookup("json")
 			if !ok {
 				continue
@@ -22,18 +21,20 @@ TakePointerValue: //取指针的值
 			if jsonTag == "-" {
 				continue
 			}
-			tag := NewSelectTag(jsonTag, "req", typeOf.Field(i).Name)
+			tag := NewSelectTag(jsonTag, selectScene, typeOf.Field(i).Name)
 			if tag.IsOmitField || !tag.IsSelect {
 				continue
 			}
-
 			if valueOf.Kind() == reflect.Pointer {
 				valueOf = valueOf.Elem()
 			}
+
+			//tree := NewFieldNodeTree(typeOf.Field(i).Name)
+			tree := NewFieldNodeTree(tag.FieldName)
 			if valueOf.Field(i).Kind() == reflect.Pointer {
-				tree.SetData(tag.FieldName, valueOf.Field(i).Elem().Interface())
+				tree.SetData(tag.FieldName, selectScene, valueOf.Field(i).Elem().Interface())
 			} else {
-				tree.SetData(tag.FieldName, valueOf.Field(i).Interface())
+				tree.SetData(tag.FieldName, selectScene, valueOf.Field(i).Interface())
 			}
 			t.AddChild(tree)
 		}
@@ -44,11 +45,14 @@ TakePointerValue: //取指针的值
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 		t.Val = valueOf.Interface()
 		t.Key = key
+
+	case reflect.Map:
+
 	}
 }
 
 func SelectMarshal(selectScene string, el interface{}) string {
-	tree := NewNTree("")
-	tree.SetData("root", el)
+	tree := NewFieldNodeTree("")
+	tree.SetData("root", selectScene, el)
 	return tree.MustJSON()
 }

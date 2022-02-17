@@ -1,16 +1,16 @@
-package main
+package filter
 
 import (
 	"encoding/json"
 )
 
-type NTree struct {
+type FieldNodeTree struct {
 	Key   string
 	Val   interface{}
-	Child []*NTree
+	Child []*FieldNodeTree
 }
 
-func (t *NTree) GetVal() interface{} {
+func (t *FieldNodeTree) GetVal() interface{} {
 	if t.Child == nil {
 		return t.Val
 	}
@@ -23,19 +23,19 @@ func (t *NTree) GetVal() interface{} {
 	return maps
 }
 
-func (t *NTree) Map() map[string]interface{} {
+func (t *FieldNodeTree) Map() map[string]interface{} {
 	maps := make(map[string]interface{})
 	for _, v := range t.Child {
 		maps[(*v).Key] = (*v).GetVal()
 	}
 	return maps
 }
-func (t *NTree) AddChild(tree *NTree) *NTree {
+func (t *FieldNodeTree) AddChild(tree *FieldNodeTree) *FieldNodeTree {
 	t.Child = append(t.Child, tree)
 	return t
 }
 
-func (t *NTree) MustJSON() string {
+func (t *FieldNodeTree) MustJSON() string {
 	j, err := json.Marshal(t.Map())
 	if err != nil {
 		panic(err)
@@ -43,15 +43,14 @@ func (t *NTree) MustJSON() string {
 	return string(j)
 }
 
-func NewNTree(key string, val ...interface{}) *NTree {
+func NewFieldNodeTree(key string, val ...interface{}) *FieldNodeTree {
 	if len(val) > 0 {
-		return &NTree{
+		return &FieldNodeTree{
 			Key: key,
 			Val: val[0],
 		}
 	}
-
-	return &NTree{
+	return &FieldNodeTree{
 		Key: key,
 	}
 }

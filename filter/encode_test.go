@@ -1,4 +1,4 @@
-package main
+package filter
 
 import (
 	"fmt"
@@ -12,15 +12,14 @@ type Book struct {
 }
 
 type User struct {
-	Name  string `json:"name,select(req|res|article)"`
-	Age   int    `json:"age,select(req|res|article)"`
+	Name  string `json:"name,select(2|justOne|req|res|article)"`
+	Age   int    `json:"age,select(2|req|res|article)"`
 	Hobby string `json:"hobby,select(req|res|article)"`
 	Books []Book `json:"books,select(article)"`
 	B     *Book  `json:"b,select(req|article)"`
 }
 
 func TestFilter(t *testing.T) {
-
 	model := User{
 		Name:  "boyan",
 		Age:   20,
@@ -35,6 +34,8 @@ func TestFilter(t *testing.T) {
 			Title: "c++从研发到脱发",
 		},
 	}
+	//fmt.Println(SelectMarshal("req", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
+	//fmt.Println(SelectMarshal("justOne", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
 	fmt.Println(SelectMarshal("req", &model)) //---->>输出结果： {"B":{"page":19},"age":20,"hobby":"coding","name":"boyan"}
 
 	//
