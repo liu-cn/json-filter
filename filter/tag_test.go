@@ -1,42 +1,64 @@
 package filter
 
 import (
-	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 )
 
-func TestTagReg(t *testing.T) {
-	//re := "select(art,article,chat)"
-
-	type Model struct {
-		Name string `json:"name,omitempty,select(req|res),omit(chat|profile|article)"`
-	}
-
-	tag := reflect.TypeOf(&Model{}).Elem().Field(0).Tag.Get("json")
-	fmt.Println(tag)
-
-	selectStr := ""
-	omitStr := ""
-
+func GetSelectTag(tag string) []string {
 	tags := strings.Split(tag, ",")
-
-	fieldName := tags[0]
+	selectTags := make([]string, 0, 5)
 	for _, s := range tags {
-		//fmt.Println(s)
 		if strings.HasPrefix(s, "select(") {
-			selectStr = s[7 : len(s)-1]
-		}
-
-		if strings.HasPrefix(s, "omit(") {
-			omitStr = s[5 : len(s)-1]
+			selectStr := s[7 : len(s)-1]
+			scene := strings.Split(selectStr, "|")
+			for _, v := range scene {
+				selectTags = append(selectTags, v)
+			}
 		}
 	}
-	fmt.Println(selectStr)
-	fmt.Println(omitStr)
-	fmt.Println(fieldName)
+	return selectTags
+}
+func TestTagSelect(t *testing.T) {
+	tag := "name,omitempty,select(req|res),omit(chat|profile|article)"
+	want := []string{
+		"req", "res",
+	}
+	got := GetSelectTag(tag)
 
+	if len(got) != len(want) {
+		t.Errorf("tag 解析不符合预期want:%v got:%v", want, got)
+		return
+	}
+
+	for i, v := range got {
+		if !(v == want[i]) {
+			t.Errorf("tag 解析不符合预期want:%v got:%v", want, got)
+		}
+	}
+}
+func TestNewSelectTag(t *testing.T) {
+	selector := "req"
+	name := "name"
+	tag := "name,omitempty,select(req|res),omit(chat|profile|article)"
+	got := NewSelectTag(tag, "req", "name")
+	if got.IsOmitField {
+		t.Errorf("IsOmitField 应该为true")
+	}
+	if !got.IsSelect {
+		t.Errorf("IsSelect 应该为true")
+	}
+
+	if got.SelectScene != selector {
+		t.Errorf("SelectScene 应为%v 实际%v", selector, got.SelectScene)
+	}
+	if got.FieldName != name {
+		t.Errorf("FieldName 应为%v 实际%v", name, got.FieldName)
+	}
+
+	//=== RUN   TestNewSelectTag
+	//--- PASS: TestNewSelectTag (0.00s)
+	//PASS
 }
 
 func OmitTest() {
@@ -80,8 +102,4 @@ func BenchmarkTags(b *testing.B) {
 	//	BenchmarkTags/omit-f
 	//	BenchmarkTags/omit-f-4           3889572               301.8 ns/op
 	//	PASS
-}
-func TestTagRe(t *testing.T) {
-	//SelectTest()
-	OmitTest()
 }

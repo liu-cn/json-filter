@@ -5,6 +5,7 @@ import "strings"
 type ExampleModel struct {
 	Name string `json:"name,omitempty,select(req|res),omit(chat|profile|article)"`
 }
+
 type Tag struct {
 
 	//执行的场景
