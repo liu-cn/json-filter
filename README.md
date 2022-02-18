@@ -5,7 +5,8 @@ golang的json过滤器，随意选择字段，随意输出指定结构体的字�
 
 type User struct {
 	Name string `json:"name,select(justName|req|foo)"`
-	Age  int    `json:"select(req|res|article)"`
+	Age  int    `json:",select(req|res|article)"`
+	//不自定义json字段名使用结构体字段名的话，tag首字符必须是","
 
 	LongName string `json:"long_name,select(foo)"`
 	Hobby    string `json:"hobby,select(req|res|foo)"`
