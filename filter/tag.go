@@ -9,7 +9,6 @@ type ExampleModel struct {
 }
 
 type Tag struct {
-
 	//执行的场景
 	SelectScene string
 	//该字段是否需要被忽略？
@@ -32,7 +31,6 @@ func NewSelectTag(tag, selectScene, fieldName string) Tag {
 	if len(tags) < 2 {
 		return tagEl
 	} else {
-
 		if tags[0] != "" {
 			tagEl.FieldName = tags[0]
 		}
