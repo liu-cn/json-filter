@@ -1,18 +1,26 @@
 package filter
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 )
 
+type T struct {
+	BB string `json:"bb"`
+	CC string `json:"cc"`
+}
+
 type User struct {
 	Name string `json:"name,select(justName|req|foo)"`
-	Age  int    `json:"select(req|res|article)"`
+	Age  int    `json:",select(req|res|article)"`
 
 	LongName string `json:"long_name,select(foo)"`
 	Hobby    string `json:"hobby,select(req|res|foo)"`
 	Books    []Book `json:"books,select()"`
 	Book     *Book  `json:"book,select(res|foo)"`
+
+	T `json:"t"`
 }
 
 type Book struct {
@@ -22,6 +30,7 @@ type Book struct {
 }
 
 func TestFilter(t *testing.T) {
+
 	model := User{
 		Name:  "boyan",
 		Age:   20,
@@ -73,4 +82,34 @@ func BenchmarkFilter(b *testing.B) {
 	//BenchmarkFilter-16    	  176220	      6421 ns/op
 	//PASS
 
+}
+
+func TestJSON(t *testing.T) {
+
+	tt := T{
+		BB: "bb",
+		CC: "cc",
+	}
+	model := User{
+		Name:  "boyan",
+		Age:   20,
+		Hobby: "coding",
+		Books: []Book{
+			{Page: 10, Price: "199.9"},
+			{Page: 100, Price: "1999.9"},
+		},
+		T:        tt,
+		LongName: "long name",
+		Book: &Book{
+			Price: "18.8",
+			Page:  19,
+			Title: "c++从研发到脱发",
+		},
+	}
+
+	marshal, err := json.Marshal(&model)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(marshal))
 }

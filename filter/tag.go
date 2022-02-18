@@ -29,10 +29,11 @@ func NewSelectTag(tag, selectScene, fieldName string) Tag {
 	tags := strings.Split(tag, ",")
 	tagEl.FieldName = fieldName
 
-	if len(tags[0]) < 7 {
-		tagEl.FieldName = tags[0]
+	if len(tags) < 2 {
+		return tagEl
 	} else {
-		if tags[0][0:7] != "select(" {
+
+		if tags[0] != "" {
 			tagEl.FieldName = tags[0]
 		}
 	}

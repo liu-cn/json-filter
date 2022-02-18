@@ -10,15 +10,19 @@ func (t *FieldNodeTree) SetData(key, selectScene string, el interface{}) {
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Pointer: //如果是指针类型则取地址重新判断类型
-		typeOf = typeOf.Elem() //if el类型为int类型的指针(*int) 则此操作相当于*el,取值
+		typeOf = typeOf.Elem()
 		goto TakePointerValue
 	case reflect.Struct:
+
+		if typeOf.NumField() == 0 {
+			t.Key = key
+			t.Val = struct{}{}
+			return
+		}
+
 		for i := 0; i < typeOf.NumField(); i++ {
 			jsonTag, ok := typeOf.Field(i).Tag.Lookup("json")
-			if !ok {
-				continue
-			}
-			if jsonTag == "-" {
+			if !ok || jsonTag == "-" {
 				continue
 			}
 			tag := NewSelectTag(jsonTag, selectScene, typeOf.Field(i).Name)
