@@ -35,20 +35,23 @@ model := User{
 			Title: "c++从研发到脱发",
 		},
 	}
-	fmt.Println(SelectMarshal("res", &model))
-	//---->>output 输出以下结果： 
-       {
-            "Age":20,
-            "book":{
-                "price":"18.8"
-			},
-            "hobby":"coding"
-        }
-
-	fmt.Println(SelectMarshal("justName", model))
-	//---->>output 输出结果： {"name":"boyan"}
-
-	fmt.Println(SelectMarshal("foo", model))
+	
+	
+	fmt.Println(SelectMarshal("res", &model))                             
+	//---->>output 输出以下结果：                                               
+       {                                                                 
+            "Age":20,                                                    
+            "book":{                                                      
+                "price":"18.8"                                           
+			},                                                           
+            "hobby":"coding"                                             
+        }                                                                
+                                                                          
+	fmt.Println(SelectMarshal("justName", model))                         
+	//---->>output 输出以下结果：                                                
+    {"name":"boyan"}                                                     
+                                                                         
+	fmt.Println(SelectMarshal("foo", model))                             
 	//---->>output 输出以下结果：
     {
         "book":{
