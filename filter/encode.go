@@ -19,7 +19,6 @@ TakePointerValue: //取指针的值
 			t.Val = struct{}{}
 			return
 		}
-
 		for i := 0; i < typeOf.NumField(); i++ {
 			jsonTag, ok := typeOf.Field(i).Tag.Lookup("json")
 			if !ok || jsonTag == "-" {
@@ -40,6 +39,9 @@ TakePointerValue: //取指针的值
 			}
 			t.AddChild(tree)
 		}
+		if t.Child == nil {
+			t.Val = struct{}{} //说明该结构体上没有选择任何字段，返回{}
+		}
 	case reflect.Bool,
 		reflect.String,
 		reflect.Float64, reflect.Float32,
@@ -49,7 +51,30 @@ TakePointerValue: //取指针的值
 		t.Key = key
 
 	case reflect.Map:
+		keys := valueOf.MapKeys()
+		if len(keys) == 0 { //空map情况下解析为{}
+			t.Val = struct{}{}
+			return
+		}
+		for i := 0; i < len(keys); i++ {
+			k := keys[i].String()
+			nodeTree := NewFieldNodeTree(k)
+			nodeTree.SetData(k, selectScene, valueOf.MapIndex(keys[i]).Interface())
+			t.AddChild(nodeTree)
+		}
 
+	case reflect.Slice:
+		l := valueOf.Len()
+		if l == 0 {
+			t.Val = make([]int, 0, 0)
+			return
+		}
+		t.IsSlice = true
+		for i := 0; i < l; i++ {
+			node := NewFieldNodeTree("")
+			node.SetData("", selectScene, valueOf.Index(i).Interface())
+			t.AddChild(node)
+		}
 	}
 }
 
