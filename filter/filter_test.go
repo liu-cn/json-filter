@@ -8,7 +8,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-type Example struct {
+type TestCase struct {
 	Int        int         `json:"int,select(all|intAll)"`
 	Int8       int8        `json:"int8,select(all|intAll)"`
 	Int16      int16       `json:"int16,select(all|intAll)"`
@@ -68,7 +68,7 @@ type UserP struct {
 	Struct *ChildP `json:"struct,select(all|struct)"`
 }
 
-func NewExample() Example {
+func NewTestCase() TestCase {
 
 	Int := 100
 	Int8 := int8(8)
@@ -90,7 +90,7 @@ func NewExample() Example {
 	str := "string p"
 	interfaces := "interface p"
 	ageP := 10
-	tests := Example{
+	tests := TestCase{
 		Int:      100,
 		Int8:     8,
 		Int16:    16,
@@ -149,10 +149,10 @@ func NewExample() Example {
 }
 
 func testSelector(selector string) string {
-	return SelectMarshal(selector, NewExample())
+	return SelectMarshal(selector, NewTestCase())
 }
 func testJSON() string {
-	j, err := json.Marshal(NewExample())
+	j, err := json.Marshal(NewTestCase())
 	if err != nil {
 		panic(err)
 	}
@@ -160,7 +160,7 @@ func testJSON() string {
 }
 
 func testJsonIter() string {
-	j, err := jsoniter.Marshal(NewExample())
+	j, err := jsoniter.Marshal(NewTestCase())
 	if err != nil {
 		panic(err)
 	}
