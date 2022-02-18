@@ -3,6 +3,7 @@ package filter
 import (
 	"encoding/json"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"testing"
 )
 
@@ -97,6 +98,14 @@ func testJSON() string {
 	return string(j)
 }
 
+func testJsonIter() string {
+	j, err := jsoniter.Marshal(NewExample())
+	if err != nil {
+		panic(err)
+	}
+	return string(j)
+}
+
 func TestExample(t *testing.T) {
 	t.Run("select-all", func(t *testing.T) {
 		fmt.Println(testSelector("all"))
@@ -144,6 +153,12 @@ func BenchmarkExample(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			testJSON()
 			//BenchmarkExample/json-16               	  317278	      3324 ns/op
+		}
+	})
+	b.Run("testJsonIter", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			testJsonIter()
+
 		}
 	})
 
