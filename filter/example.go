@@ -54,7 +54,7 @@ func (u Users) ChatResp() interface{} {
 	return string(jsonStr)
 }
 
-func NewUsers() Users {
+func newUsers() Users {
 	return Users{
 		UID:          1,
 		Name:         "boyan",
@@ -104,8 +104,8 @@ func NewUsers() Users {
 	}
 }
 
-func FilterUser() {
-	users := NewUsers()
+func filterUser() {
+	users := newUsers()
 	jsonStr, _ := json.Marshal(users)
 	fmt.Println(string(jsonStr))
 	//{"uid":1,"name":"boyan","age":20,"avatar":"https://www.avatar.com","birthday":2001,"password":"123","password_slat":"slat","langAge":[{"name":"c","arts":[{"name":"cc","profile":{"c":"clang"},"values":["1","2"]}]},{"name":"c++","arts":[{"name":"c++","profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"name":"Go","arts":[{"name":"Golang","profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}]}

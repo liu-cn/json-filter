@@ -6,7 +6,7 @@ import (
 )
 
 func JsonMarshal() string {
-	marshal, err := json.Marshal(NewUsers())
+	marshal, err := json.Marshal(newUsers())
 	if err != nil {
 		panic(err)
 	}
@@ -17,31 +17,31 @@ func BenchmarkUserExample(b *testing.B) {
 
 	b.Run("justName", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			SelectMarshal("justName", NewUsers())
+			SelectMarshal("justName", newUsers())
 		}
 	})
 
 	b.Run("lookup", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			SelectMarshal("lookup", NewUsers())
+			SelectMarshal("lookup", newUsers())
 		}
 	})
 
 	b.Run("profile", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			SelectMarshal("profile", NewUsers())
+			SelectMarshal("profile", newUsers())
 		}
 	})
 
 	b.Run("chat", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			SelectMarshal("chat", NewUsers())
+			SelectMarshal("chat", newUsers())
 		}
 	})
 
 	b.Run("lang", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			SelectMarshal("lang", NewUsers())
+			SelectMarshal("lang", newUsers())
 		}
 	})
 

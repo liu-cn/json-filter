@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-func (t *FieldNodeTree) SetData(key, selectScene string, el interface{}) {
+func (t *fieldNodeTree) SetData(key, selectScene string, el interface{}) {
 	typeOf := reflect.TypeOf(el)
 	valueOf := reflect.ValueOf(el)
 TakePointerValue: //取指针的值
@@ -24,14 +24,14 @@ TakePointerValue: //取指针的值
 			if !ok || jsonTag == "-" {
 				continue
 			}
-			tag := NewSelectTag(jsonTag, selectScene, typeOf.Field(i).Name)
+			tag := newSelectTag(jsonTag, selectScene, typeOf.Field(i).Name)
 			if tag.IsOmitField || !tag.IsSelect {
 				continue
 			}
 			if valueOf.Kind() == reflect.Pointer {
 				valueOf = valueOf.Elem()
 			}
-			tree := NewFieldNodeTree(tag.FieldName)
+			tree := newFieldNodeTree(tag.FieldName)
 			if valueOf.Field(i).Kind() == reflect.Pointer {
 				tree.SetData(tag.FieldName, selectScene, valueOf.Field(i).Elem().Interface())
 			} else {
@@ -58,7 +58,7 @@ TakePointerValue: //取指针的值
 		}
 		for i := 0; i < len(keys); i++ {
 			k := keys[i].String()
-			nodeTree := NewFieldNodeTree(k)
+			nodeTree := newFieldNodeTree(k)
 			nodeTree.SetData(k, selectScene, valueOf.MapIndex(keys[i]).Interface())
 			t.AddChild(nodeTree)
 		}
@@ -71,7 +71,7 @@ TakePointerValue: //取指针的值
 		}
 		t.IsSlice = true
 		for i := 0; i < l; i++ {
-			node := NewFieldNodeTree("")
+			node := newFieldNodeTree("")
 			node.SetData("", selectScene, valueOf.Index(i).Interface())
 			t.AddChild(node)
 		}
@@ -79,7 +79,7 @@ TakePointerValue: //取指针的值
 }
 
 func SelectMarshal(selectScene string, el interface{}) string {
-	tree := NewFieldNodeTree("")
+	tree := newFieldNodeTree("")
 	tree.SetData("root", selectScene, el)
 	return tree.MustJSON()
 }

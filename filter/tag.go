@@ -5,10 +5,10 @@ import (
 )
 
 const (
-	AnySelect = "$any"
+	anySelect = "$any"
 )
 
-type ExampleModel struct {
+type exampleModel struct {
 	Name string `json:"name,omitempty,select(req|res),omit(chat|profile|article)"`
 }
 
@@ -23,7 +23,7 @@ type Tag struct {
 	FieldName string
 }
 
-func NewSelectTag(tag, selectScene, fieldName string) Tag {
+func newSelectTag(tag, selectScene, fieldName string) Tag {
 
 	tagEl := Tag{
 		SelectScene: selectScene,
@@ -45,7 +45,7 @@ func NewSelectTag(tag, selectScene, fieldName string) Tag {
 			selectStr := s[7 : len(s)-1]
 			scene := strings.Split(selectStr, "|")
 			for _, v := range scene {
-				if v == selectScene || v == AnySelect {
+				if v == selectScene || v == anySelect {
 					//说明选中了tag里的场景,不应该被忽略
 					tagEl.IsOmitField = false
 					tagEl.IsSelect = true
@@ -57,7 +57,7 @@ func NewSelectTag(tag, selectScene, fieldName string) Tag {
 	return tagEl
 }
 
-func NewOmitTag(tag, selectScene, fieldName string) Tag {
+func newOmitTag(tag, selectScene, fieldName string) Tag {
 
 	tagEl := Tag{
 		SelectScene: selectScene,
