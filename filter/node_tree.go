@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-type FieldNodeTree struct {
+type fieldNodeTree struct {
 	Key string
 	//字段名
 
@@ -14,10 +14,10 @@ type FieldNodeTree struct {
 	IsSlice bool //是否是切片，或者数组，
 
 	//如果是struct则保存所有字段k v，如果是切片就保存切片的所有值
-	Child []*FieldNodeTree
+	Child []*fieldNodeTree
 }
 
-func (t *FieldNodeTree) GetVal() interface{} {
+func (t *fieldNodeTree) GetVal() interface{} {
 	if t.Child == nil {
 		return t.Val
 	}
@@ -38,19 +38,19 @@ func (t *FieldNodeTree) GetVal() interface{} {
 	return maps
 }
 
-func (t *FieldNodeTree) Map() map[string]interface{} {
+func (t *fieldNodeTree) Map() map[string]interface{} {
 	maps := make(map[string]interface{})
 	for _, v := range t.Child {
 		maps[(*v).Key] = (*v).GetVal()
 	}
 	return maps
 }
-func (t *FieldNodeTree) AddChild(tree *FieldNodeTree) *FieldNodeTree {
+func (t *fieldNodeTree) AddChild(tree *fieldNodeTree) *fieldNodeTree {
 	t.Child = append(t.Child, tree)
 	return t
 }
 
-func (t *FieldNodeTree) MustJSON() string {
+func (t *fieldNodeTree) MustJSON() string {
 	j, err := json.Marshal(t.Map())
 	if err != nil {
 		panic(err)
@@ -58,14 +58,14 @@ func (t *FieldNodeTree) MustJSON() string {
 	return string(j)
 }
 
-func NewFieldNodeTree(key string, val ...interface{}) *FieldNodeTree {
+func newFieldNodeTree(key string, val ...interface{}) *fieldNodeTree {
 	if len(val) > 0 {
-		return &FieldNodeTree{
+		return &fieldNodeTree{
 			Key: key,
 			Val: val[0],
 		}
 	}
-	return &FieldNodeTree{
+	return &fieldNodeTree{
 		Key: key,
 	}
 }

@@ -41,7 +41,7 @@ func TestNewSelectTag(t *testing.T) {
 	selector := "req"
 	name := "name"
 	tag := "name,omitempty,select(req|res),omit(chat|profile|article)"
-	got := NewSelectTag(tag, "req", "name")
+	got := newSelectTag(tag, "req", "name")
 	if got.IsOmitField {
 		t.Errorf("IsOmitField 应该为true")
 	}
@@ -62,29 +62,29 @@ func TestNewSelectTag(t *testing.T) {
 }
 
 func OmitTest() {
-	_ = NewOmitTag("name,omitempty,select(req|res),omit(chat|profile|article)", "article", "IsOmitField:true")
+	_ = newOmitTag("name,omitempty,select(req|res),omit(chat|profile|article)", "article", "IsOmitField:true")
 }
 
 func BenchmarkTags(b *testing.B) {
 
 	b.Run("select", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			NewSelectTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "user", "Name")
+			newSelectTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "user", "Name")
 		}
 	})
 	b.Run("select-f", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			NewSelectTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "req", "Name")
+			newSelectTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "req", "Name")
 		}
 	})
 	b.Run("omit", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			NewOmitTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "article", "Name")
+			newOmitTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "article", "Name")
 		}
 	})
 	b.Run("omit-f", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			NewOmitTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "chat", "Name")
+			newOmitTag("name,omitempty,select(req|res|user),omit(chat|profile|article)", "chat", "Name")
 		}
 	})
 
