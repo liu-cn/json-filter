@@ -1,8 +1,9 @@
 package main
 
 import (
-	"filter/filter"
 	"fmt"
+
+	"github.com/liu-cn/json-filter/filter"
 )
 
 type Book struct {
