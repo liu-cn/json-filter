@@ -43,7 +43,7 @@ type TestCase struct {
 	InterfaceP interface{} `json:"interface_p,select(all)"`
 	Struct     struct{}    `json:"struct,select(all)"`
 	StructP    *struct{}   `json:"struct_p,select(all)"`
-	Structs    Users       `json:"structs,select(all|struct)"`
+	Structs    UsersCase   `json:"structs,select(all|struct)"`
 
 	StructsP *UserP `json:"structs_p,select(all|struct)"`
 }
@@ -52,7 +52,7 @@ type Child struct {
 	CName string `json:"c_name,select(all|2|struct)"`
 	CAge  int    `json:"c_age,select(all|struct)"`
 }
-type Users struct {
+type UsersCase struct {
 	Name   string `json:"name,select(all|1)"`
 	Age    int    `json:"age,select(all|2)"`
 	Struct Child  `json:"struct,select(all|struct)"`
@@ -127,7 +127,7 @@ func NewTestCase() TestCase {
 
 		Struct:  struct{}{},
 		StructP: &struct{}{},
-		Structs: Users{
+		Structs: UsersCase{
 			Name: "name",
 			Age:  10,
 			Struct: Child{
@@ -188,32 +188,32 @@ func TestExample(t *testing.T) {
 	})
 }
 
-func BenchmarkExample(b *testing.B) {
+func BenchmarkExampleFilter(b *testing.B) {
 
 	b.Run("select-all", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			testSelector("all")
-			//BenchmarkExample/select-all-16         	   24118	     42690 ns/op
+			//BenchmarkUserExample/select-all-16         	   24118	     42690 ns/op
 		}
 	})
 
 	b.Run("select-intAll", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			testSelector("intAll")
-			//BenchmarkExample/select-intAll-16      	   64729	     16692 ns/op
+			//BenchmarkUserExample/select-intAll-16      	   64729	     16692 ns/op
 		}
 	})
 	b.Run("select-struct", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			testSelector("struct")
-			//BenchmarkExample/select-struct-16      	   51351	     21172 ns/op
+			//BenchmarkUserExample/select-struct-16      	   51351	     21172 ns/op
 		}
 	})
 
 	b.Run("json", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			testJSON()
-			//BenchmarkExample/json-16               	  317278	      3324 ns/op
+			//BenchmarkUserExample/json-16               	  317278	      3324 ns/op
 		}
 	})
 	b.Run("testJsonIter", func(b *testing.B) {
@@ -227,14 +227,14 @@ func BenchmarkExample(b *testing.B) {
 	//goarch: amd64
 	//pkg: filter/filter
 	//cpu: Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
-	//BenchmarkExample
-	//BenchmarkExample/select-all
-	//BenchmarkExample/select-all-16         	   24118	     42690 ns/op
-	//BenchmarkExample/select-intAll
-	//BenchmarkExample/select-intAll-16      	   64729	     16692 ns/op
-	//BenchmarkExample/select-struct
-	//BenchmarkExample/select-struct-16      	   51351	     21172 ns/op
-	//BenchmarkExample/json
-	//BenchmarkExample/json-16               	  317278	      3324 ns/op
+	//BenchmarkUserExample
+	//BenchmarkUserExample/select-all
+	//BenchmarkUserExample/select-all-16         	   24118	     42690 ns/op
+	//BenchmarkUserExample/select-intAll
+	//BenchmarkUserExample/select-intAll-16      	   64729	     16692 ns/op
+	//BenchmarkUserExample/select-struct
+	//BenchmarkUserExample/select-struct-16      	   51351	     21172 ns/op
+	//BenchmarkUserExample/json
+	//BenchmarkUserExample/json-16               	  317278	      3324 ns/op
 	//PASS
 }

@@ -1,4 +1,4 @@
-module filter
+module github.com/liu-cn/json-filter
 
 go 1.18
 
