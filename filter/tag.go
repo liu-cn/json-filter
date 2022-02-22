@@ -20,7 +20,9 @@ type Tag struct {
 	//是选中的情况
 	IsSelect bool
 	//字段名称
-	FieldName string
+	UseFieldName string
+	//IsAnonymous 标识该字段是否是匿名字段
+	IsAnonymous bool
 }
 
 func newSelectTag(tag, selectScene, fieldName string) Tag {
@@ -30,13 +32,15 @@ func newSelectTag(tag, selectScene, fieldName string) Tag {
 		IsOmitField: true,
 	}
 	tags := strings.Split(tag, ",")
-	tagEl.FieldName = fieldName
+	tagEl.UseFieldName = fieldName
 
 	if len(tags) < 2 {
 		return tagEl
 	} else {
-		if tags[0] != "" {
-			tagEl.FieldName = tags[0]
+		if tags[0] == "" {
+			tagEl.IsAnonymous = true
+		} else {
+			tagEl.UseFieldName = tags[0]
 		}
 	}
 
@@ -64,7 +68,7 @@ func newOmitTag(tag, selectScene, fieldName string) Tag {
 		IsOmitField: false,
 	}
 	tags := strings.Split(tag, ",")
-	tagEl.FieldName = tags[0]
+	tagEl.UseFieldName = tags[0]
 	for _, s := range tags {
 		if strings.HasPrefix(s, "omit(") {
 			omitStr := s[5 : len(s)-1]

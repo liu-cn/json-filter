@@ -1,6 +1,8 @@
 package filter
 
 import (
+	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -52,9 +54,33 @@ func TestNewSelectTag(t *testing.T) {
 	if got.SelectScene != selector {
 		t.Errorf("SelectScene 应为%v 实际%v", selector, got.SelectScene)
 	}
-	if got.FieldName != name {
-		t.Errorf("FieldName 应为%v 实际%v", name, got.FieldName)
+	if got.UseFieldName != name {
+		t.Errorf("UseFieldName 应为%v 实际%v", name, got.UseFieldName)
 	}
+
+	//=== RUN   TestNewSelectTag
+	//--- PASS: TestNewSelectTag (0.00s)
+	//PASS
+}
+
+func TestNewSelectTag1(t *testing.T) {
+	//selector := "req"
+	//name := "name"
+	tag := ",select(req|res),omit(chat|profile|article)"
+	got := newSelectTag(tag, "req", "name")
+	fmt.Println(fmt.Sprintf("%+v", got))
+
+	type User struct {
+		Name string
+		Book
+	}
+
+	type Book struct {
+		BookName string
+	}
+
+	fmt.Println(reflect.TypeOf(User{}).Field(0).Name)
+	fmt.Println(reflect.TypeOf(User{}).Field(1).Name)
 
 	//=== RUN   TestNewSelectTag
 	//--- PASS: TestNewSelectTag (0.00s)
