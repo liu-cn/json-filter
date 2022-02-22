@@ -85,12 +85,70 @@ user := User{
 		Name:   "boyan",
 		Avatar: "avatar",
 		UID:    1,
-	}
+}
 
 articleJson := filter.SelectMarshal("article", user)
 fmt.Println(articleJson)
 {"name":"boyan","uid":1}
 ```
+
+
+
+
+
+#### 匿名结构体（嵌入结构体）的解析，
+
+对匿名结构体的解析也是支持的，并且支持的非常棒。
+
+##### 展开结构体
+
+```go
+
+type Page struct {
+	PageInfo int `json:"pageInfo,select($any)"`
+	PageNum  int `json:"pageNum,select($any)"`
+}
+
+type Article struct {
+	Title  string `json:"title,select(article)"`
+	Page   `json:",select(article)"`     // 这种tag字段名为空的方式会直接把该结构体展开，当作匿名结构体处理  
+  //Page `json:"page,select(article)"` // 注意这里tag里标注了匿名结构体的字段名，所以解析时会解析成对象，不会展开 
+	Author string `json:"author,select(admin)"`
+}
+
+func main() {
+
+	article := Article{
+		Title: "c++从研发到脱发",
+		Page: Page{
+			PageInfo: 999,
+			PageNum:  1,
+		},
+	}
+
+	articleJson := filter.SelectMarshal("article", article)
+	fmt.Println(articleJson)
+  //输出结果--->  {"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}
+}
+
+
+```
+
+
+
+##### 不想展开结构体
+
+```go
+//不想把Page结构体展开也是可以的，很简单，把匿名结构体Page的结构体标签名加上
+//接下来把
+Page `json:",select(article)"`换成
+Page   `json:"page,select(article)"`
+
+//接下来看一下输出效果，可以看到字段没有被展开
+{"page":{"pageInfo":999,"pageNum":1},"title":"c++从研发到脱发"}
+```
+
+
 
 
 
