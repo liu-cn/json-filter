@@ -12,7 +12,7 @@ func (t *fieldNodeTree) ParseValue(key, selectScene string, el interface{}) {
 	valueOf := reflect.ValueOf(el)
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
-	case reflect.Pointer: //如果是指针类型则取地址重新判断类型
+	case reflect.Ptr: //如果是指针类型则取地址重新判断类型
 		typeOf = typeOf.Elem()
 		goto TakePointerValue
 	case reflect.Struct: //如果是字段结构体需要继续递归解析结构体字段所有值
@@ -30,12 +30,12 @@ TakePointerValue: //取指针的值
 			if tag.IsOmitField || !tag.IsSelect {
 				continue
 			}
-			if valueOf.Kind() == reflect.Pointer {
+			if valueOf.Kind() == reflect.Ptr {
 				valueOf = valueOf.Elem()
 			}
 
 			//是否是匿名结构体
-			isAnonymous := typeOf.Field(i).Anonymous && tag.IsAnonymous //什么时候才算真正的匿名字段？ Book中Title才算匿名结构体
+			isAnonymous := typeOf.Field(i).Anonymous && tag.IsAnonymous //什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
 			//type Book struct {
 			//	BookName string `json:"bookName,select(resp)"`
 			//	*Page    `json:"page,select(resp)"` // 这个不算匿名字段，为什么？因为tag里打了字段名表示要当作一个字段来对待，
@@ -48,7 +48,7 @@ TakePointerValue: //取指针的值
 				ParentNode:  t,
 				IsAnonymous: isAnonymous,
 			}
-			if valueOf.Field(i).Kind() == reflect.Pointer {
+			if valueOf.Field(i).Kind() == reflect.Ptr {
 				tree.ParseValue(tag.UseFieldName, selectScene, valueOf.Field(i).Elem().Interface())
 			} else {
 				tree.ParseValue(tag.UseFieldName, selectScene, valueOf.Field(i).Interface())
@@ -110,7 +110,7 @@ TakePointerValue: //取指针的值
 
 func SelectMarshal(selectScene string, el interface{}) string {
 	tree := newFieldNodeTree("", nil)
-	tree.ParseValue("root", selectScene, el)
+	tree.ParseValue("", selectScene, el)
 	return tree.MustJSON()
 }
 

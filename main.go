@@ -1,14 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/liu-cn/json-filter/filter"
 )
 
 type Book struct {
-	Page  string `json:"page,select(all|justBooks)"`
-	Title string `json:"title,select(all|justBooks)"`
+	Page  string `json:"page,select(all)"`
+	Title string `json:"title,select(all|justBooks|justBooks)"`
 }
 type User struct {
 	Name string `json:"name,select(all)"`
@@ -52,9 +53,11 @@ func main() {
 
 	user.Map["null_map"] = make(map[string]interface{})
 
-	fmt.Println(filter.SelectMarshal("all", user))
-	fmt.Println(filter.SelectMarshal("justMap", user))
-	fmt.Println(filter.SelectMarshal("justBooks", user))
+	fmt.Println(filter.SelectMarshal("justBooks", user.Books))
+	marshal, _ := json.Marshal(user.Books)
+	fmt.Println(string(marshal))
+	//fmt.Println(filter.SelectMarshal("justMap", user))
+	//fmt.Println(filter.SelectMarshal("justBooks", user))
 	//fmt.Println(filter.SelectMarshal("justMap", user))
 	//marshal, err := json.Marshal(user)
 	//if err != nil {

@@ -5,13 +5,12 @@ import (
 	"fmt"
 )
 
-//在json-filter把结构体编码为n叉树的时候，fieldNodeTree标志着是树中的一个结构体字段
 type fieldNodeTree struct {
 	Key string
 	//字段名
 
 	Val interface{}
-	//字段值，基础数据类型，int string，bool 等类型直接存在这里面，如果是struct类型则字段所有k v会存在Child里
+	//字段值，基础数据类型，int string，bool 等类型直接存在这里面，如果是struct,切片数组map 类型则字段所有k v会存在Child里
 
 	IsSlice bool //是否是切片，或者数组，
 
@@ -26,12 +25,12 @@ type fieldNodeTree struct {
 }
 
 func (t *fieldNodeTree) GetValue() interface{} {
-	if t.Child == nil {
-		return t.Val
-	}
 	if t.IsAnonymous {
 		//如果是匿名字段则不需要再追加这个字段
 		return nil
+	}
+	if t.Child == nil {
+		return t.Val
 	}
 	if t.IsSlice { //为切片和数组时候key为空
 		slices := make([]interface{}, 0, len(t.Child))
@@ -62,13 +61,29 @@ func (t *fieldNodeTree) Map() map[string]interface{} {
 	}
 	return maps
 }
+
+func (t *fieldNodeTree) Marshal() interface{} {
+	if t.IsSlice {
+		slices := make([]interface{}, 0, len(t.Child))
+		for i := 0; i < len(t.Child); i++ {
+			v := t.Child[i].GetValue()
+			if v != nil {
+				slices = append(slices, v)
+			}
+		}
+		return slices
+	} else {
+		return t.Map()
+	}
+}
+
 func (t *fieldNodeTree) AddChild(tree *fieldNodeTree) *fieldNodeTree {
 	t.Child = append(t.Child, tree)
 	return t
 }
 
-//这里情况很复杂，如果是以下这种情况，层层无限嵌入匿名字段，最深层Page的字段也需要添加到最上层User字段里，
-//User正确解析的效果：{"bookName":"book","pageInfo":10,"userName":"boyan"}
+//如果是以下这种情况，层层无限嵌入匿名字段，最深层Page的字段也需要添加到最上层User字段里，
+//User正确解析的结果应该是：{"bookName":"book","pageInfo":10,"userName":"boyan"}，这里根据匿名结构体是否命名来决定是否需要展开结构体字段
 //type User struct {
 //	UserName string `json:"userName,select(all)"`
 //	Book     `json:",select(all)"`
@@ -96,14 +111,17 @@ func (t *fieldNodeTree) GetParentNodeInsertPosition() *fieldNodeTree {
 	return t.ParentNode
 }
 
-// AnonymousAddChild 匿名字段追加操作
+// AnonymousAddChild 匿名字段向父节点追加操作
 func (t *fieldNodeTree) AnonymousAddChild(tree *fieldNodeTree) *fieldNodeTree {
 	t.GetParentNodeInsertPosition().AddChild(tree)
 	return t
 }
 
+// MustJSON 如果解析失败会直接panic掉
 func (t *fieldNodeTree) MustJSON() string {
-	j, err := json.Marshal(t.Map())
+	j, err := json.Marshal(t.Marshal())
+
+	//j, err := sonic.Marshal(t.Marshal()) //这个目前兼容性不是特别好，先用官方库
 	if err != nil {
 		panic(err)
 	}

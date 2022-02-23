@@ -2,15 +2,46 @@ package filter
 
 import (
 	"encoding/json"
+	"github.com/bytedance/sonic"
 	"testing"
 )
 
 func JsonMarshal() string {
-	marshal, err := json.Marshal(newUsers())
+	//marshal, err := json.Marshal(newUsers())
+	marshal, err := json.Marshal(NewMap())
 	if err != nil {
 		panic(err)
 	}
 	return string(marshal)
+}
+
+func sonicJsonMarshal() string {
+	//marshal, err := sonic.Marshal(newUsers())
+	marshal, err := sonic.Marshal(NewMap())
+	if err != nil {
+		panic(err)
+	}
+	return string(marshal)
+}
+
+func NewMap() map[string]interface{} {
+	return map[string]interface{}{
+		"name": "boyan",
+		"struct": struct {
+			Name string
+		}{
+			Name: "haha",
+		},
+		"money": 46.7,
+		"maps": map[string]interface{}{
+			"key": "key",
+		},
+	}
+}
+
+func TestName(t *testing.T) {
+	println(sonicJsonMarshal())
+	println(JsonMarshal())
 }
 
 func BenchmarkUserExample(b *testing.B) {
@@ -48,6 +79,11 @@ func BenchmarkUserExample(b *testing.B) {
 	b.Run("json(官方原生json解析)", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			JsonMarshal()
+		}
+	})
+	b.Run("sonic 解析", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			sonicJsonMarshal()
 		}
 	})
 

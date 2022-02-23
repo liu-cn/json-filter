@@ -94,9 +94,51 @@ fmt.Println(articleJson)
 
 
 
+#### 对于数组和切片的过滤
+
+是完全支持对数组和切片的过滤的。
+
+```go
+func main() {
+	type Tag struct {
+		ID   uint   `json:"id,select(all)"`
+		Name string `json:"name,select(justName|all)"`
+		Icon string `json:"icon,select(chat|profile|all)"`
+	}
+
+	tags := []Tag{   //切片和数组都支持
+		{
+			ID:   1,
+			Name: "c",
+			Icon: "icon-c",
+		},
+		{
+			ID:   1,
+			Name: "c++",
+			Icon: "icon-c++",
+		},
+		{
+			ID:   1,
+			Name: "go",
+			Icon: "icon-go",
+		},
+	}
+
+	fmt.Println(filter.SelectMarshal("justName", tags))
+	//--->输出结果： [{"name":"c"},{"name":"c++"},{"name":"go"}]
+
+	fmt.Println(filter.SelectMarshal("all", tags))
+	//--->输出结果： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
+
+	fmt.Println(filter.SelectMarshal("chat", tags))
+	//--->输出结果： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
+
+}
+```
 
 
-#### 匿名结构体（嵌入结构体）的解析，
+
+#### 匿名结构体（嵌入结构体）的过滤
 
 对匿名结构体的解析也是支持的，并且支持的非常棒。
 
@@ -147,8 +189,6 @@ Page   `json:"page,select(article)"`
 //接下来看一下输出效果，可以看到字段没有被展开
 {"page":{"pageInfo":999,"pageNum":1},"title":"c++从研发到脱发"}
 ```
-
-
 
 
 
