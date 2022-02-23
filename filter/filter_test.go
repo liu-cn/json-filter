@@ -219,7 +219,6 @@ func BenchmarkExampleFilter(b *testing.B) {
 	b.Run("testJsonIter", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			testJsonIter()
-
 		}
 	})
 
