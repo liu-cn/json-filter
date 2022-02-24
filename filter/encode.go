@@ -6,6 +6,12 @@ import (
 
 var nilSlice = make([]int, 0, 0)
 
+//var timeType = reflect.TypeOf(time.Now())
+
+const (
+	timeType = "time.Time"
+)
+
 // ParseValue 解析字段值
 func (t *fieldNodeTree) ParseValue(key, selectScene string, el interface{}) {
 	typeOf := reflect.TypeOf(el)
@@ -16,6 +22,16 @@ TakePointerValue: //取指针的值
 		typeOf = typeOf.Elem()
 		goto TakePointerValue
 	case reflect.Struct: //如果是字段结构体需要继续递归解析结构体字段所有值
+
+		if valueOf.Kind() == reflect.Ptr {
+			valueOf = valueOf.Elem()
+		}
+		if typeOf.String() == timeType { //是time.Time类型或者底层是time.Time类型
+			t.Key = key
+			t.Val = valueOf.Interface()
+			return
+		}
+
 		if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
 			t.Key = key
 			t.Val = struct{}{}
