@@ -1,6 +1,6 @@
 module github.com/liu-cn/json-filter
 
-go 1.18
+go 1.17
 
 require (
 	github.com/bytedance/sonic v1.1.0
