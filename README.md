@@ -4,17 +4,17 @@ golang的json过滤器，随意选择字段，随意输出指定结构体的字�
 0. [1分钟入门](#1分钟入门)
 1. [过滤方式](#过滤方式)
 
-​		[select() 选择器，选择过滤](#select() 选择器，选择过滤)
+​		[select() 选择器，选择过滤](#select 选择器，选择过滤)
 
-​		[omit() 选择器， 排除过滤](#omit() 选择器， 排除过滤)
+​		[omit() 选择器， 排除过滤](#omit选择器， 排除过滤)
 
 2. [$any标识符 任意场景解析](#$any标识符 任意场景解析)
 
 3. [过滤后的Filter结构体的方法](#过滤后的Filter结构体的方法)
 
-​	     [Filter.Interface()](#Filter.Interface())  
+​	     [Filter.Interface()](#Filter.Interface)  
 
-​		[Filter.MustJSON()](#Filter.MustJSON())
+​		[Filter.MustJSON()](#Filter.MustJSON)
 
 4. [高级用法](#高级用法)
 
@@ -139,7 +139,7 @@ func main() {
 
 #### 过滤方式
 
-##### select() 选择器，选择过滤
+##### select选择器，选择过滤
 
 select选择器快速入门已经说了，用法应该知道了select选择器标记的字段会被选择，omit则反之
 
@@ -151,7 +151,7 @@ type User struct {
 }
 ```
 
-##### omit() 选择器， 排除过滤
+##### omit选择器， 排除过滤
 
 omit则反之，标记的字段会被排除。
 
@@ -191,7 +191,7 @@ OmitMarshal("无论这里选择任何场景",user)//无论何种场景都会排�
 
 #### 过滤后的Filter结构体的方法
 
-##### Filter.Interface()  
+##### Filter.Interface
 
 过滤后的json数据结构，（可以被json编码）
 
@@ -210,7 +210,7 @@ ps：
 
 
 
-##### Filter.MustJSON()
+##### Filter.MustJSON
 
 过滤后直接编码成的json字符串
 
