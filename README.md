@@ -6,7 +6,7 @@ golang的json过滤器，随意选择字段，随意输出指定结构体的字�
 
 ​		[select() 选择器，选择过滤](#select() 选择器，选择过滤)
 
-   	 [omit() 选择器， 排除过滤](omit() 选择器， 排除过滤)
+​		[omit() 选择器， 排除过滤](#omit() 选择器， 排除过滤)
 
 2. [$any标识符 任意场景解析](#$any标识符 任意场景解析)
 
@@ -14,7 +14,7 @@ golang的json过滤器，随意选择字段，随意输出指定结构体的字�
 
 ​	     [Filter.Interface()](#Filter.Interface())  
 
-   	  [Filter.MustJSON()](#Filter.MustJSON())
+​		[Filter.MustJSON()](#Filter.MustJSON())
 
 4. [高级用法](#高级用法)
 
