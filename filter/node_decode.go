@@ -17,6 +17,9 @@ type fieldNodeTree struct {
 	//是否是匿名结构体，内嵌结构体，需要把所有字段展开
 	IsAnonymous bool
 
+	//该字段值是否为nil
+	IsNil bool
+
 	//父节点指针，可以为nil，
 	ParentNode *fieldNodeTree
 
@@ -24,38 +27,47 @@ type fieldNodeTree struct {
 	Child []*fieldNodeTree
 }
 
-func (t *fieldNodeTree) GetValue() interface{} {
+func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 	if t.IsAnonymous {
 		//如果是匿名字段则不需要再追加这个字段
-		return nil
+		return nil, false
+	}
+	if t.IsNil {
+		return nil, true
 	}
 	if t.Child == nil {
-		return t.Val
+		return t.Val, true
 	}
 	if t.IsSlice { //为切片和数组时候key为空
 		slices := make([]interface{}, 0, len(t.Child))
 		for i := 0; i < len(t.Child); i++ {
-			slices = append(slices, t.Child[i].GetValue())
+			value, ok0 := t.Child[i].GetValue()
+			if ok0 {
+				slices = append(slices, value)
+			}
 		}
 		//t.Val = slices
-		return slices
+		return slices, true
 	}
 	maps := make(map[string]interface{})
 	for _, v := range t.Child {
-		value := (*v).GetValue()
-		if value != nil {
+		value, ok1 := (*v).GetValue()
+		if ok1 {
 			maps[(*v).Key] = value
+			//if value != nil {
+			//	maps[(*v).Key] = value
+			//}
 		}
 	}
 	//t.Val = maps
-	return maps
+	return maps, true
 }
 
 func (t *fieldNodeTree) Map() map[string]interface{} {
 	maps := make(map[string]interface{})
 	for _, v := range t.Child {
-		value := (*v).GetValue()
-		if value != nil {
+		value, ok := (*v).GetValue()
+		if ok {
 			maps[(*v).Key] = value
 		}
 	}
@@ -66,13 +78,13 @@ func (t *fieldNodeTree) Marshal() interface{} {
 	if t.IsSlice {
 		slices := make([]interface{}, 0, len(t.Child))
 		for i := 0; i < len(t.Child); i++ {
-			v := t.Child[i].GetValue()
-			if v != nil {
+			v, ok := t.Child[i].GetValue()
+			if ok {
 				slices = append(slices, v)
 			}
 		}
 		return slices
-	} else {
+	} else { //说明是结构体或者map
 		return t.Map()
 	}
 }
@@ -120,12 +132,35 @@ func (t *fieldNodeTree) AnonymousAddChild(tree *fieldNodeTree) *fieldNodeTree {
 // MustJSON 如果解析失败会直接panic掉
 func (t *fieldNodeTree) MustJSON() string {
 	j, err := json.Marshal(t.Marshal())
-
 	//j, err := sonic.Marshal(t.Marshal()) //这个目前兼容性不是特别好，先用官方库
 	if err != nil {
 		panic(err)
 	}
 	return string(j)
+}
+
+func (t *fieldNodeTree) JSON() (string, error) {
+	j, err := json.Marshal(t.Marshal())
+	if err != nil {
+		return "", err
+	}
+	return string(j), nil
+}
+
+func (t *fieldNodeTree) Bytes() ([]byte, error) {
+	j, err := json.Marshal(t.Marshal())
+	if err != nil {
+		return nil, err
+	}
+	return j, nil
+}
+
+func (t *fieldNodeTree) MustBytes() []byte {
+	j, err := json.Marshal(t.Marshal())
+	if err != nil {
+		panic(err)
+	}
+	return j
 }
 
 func newFieldNodeTree(key string, parentNode *fieldNodeTree, val ...interface{}) *fieldNodeTree {

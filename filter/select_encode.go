@@ -12,8 +12,9 @@ const (
 	timeType = "time.Time"
 )
 
-// ParseValue 解析字段值
-func (t *fieldNodeTree) ParseValue(key, selectScene string, el interface{}) {
+// ParseSelectValue 解析字段值
+func (t *fieldNodeTree) ParseSelectValue(key, selectScene string, el interface{}) {
+
 	typeOf := reflect.TypeOf(el)
 	valueOf := reflect.ValueOf(el)
 TakePointerValue: //取指针的值
@@ -23,9 +24,19 @@ TakePointerValue: //取指针的值
 		goto TakePointerValue
 	case reflect.Struct: //如果是字段结构体需要继续递归解析结构体字段所有值
 
+	TakeValueOfPointerValue: //这里主要是考虑到有可能用的不是一级指针，如果是***int 等多级指针就需要不断的取值
 		if valueOf.Kind() == reflect.Ptr {
-			valueOf = valueOf.Elem()
+			if valueOf.IsNil() {
+				t.IsNil = true
+				//tree.IsNil=true
+				//t.AddChild(tree)
+				return
+			} else {
+				valueOf = valueOf.Elem()
+				goto TakeValueOfPointerValue
+			}
 		}
+
 		if typeOf.String() == timeType { //是time.Time类型或者底层是time.Time类型
 			t.Key = key
 			t.Val = valueOf.Interface()
@@ -46,9 +57,6 @@ TakePointerValue: //取指针的值
 			if tag.IsOmitField || !tag.IsSelect {
 				continue
 			}
-			if valueOf.Kind() == reflect.Ptr {
-				valueOf = valueOf.Elem()
-			}
 
 			//是否是匿名结构体
 			isAnonymous := typeOf.Field(i).Anonymous && tag.IsAnonymous //什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
@@ -64,11 +72,32 @@ TakePointerValue: //取指针的值
 				ParentNode:  t,
 				IsAnonymous: isAnonymous,
 			}
-			if valueOf.Field(i).Kind() == reflect.Ptr {
-				tree.ParseValue(tag.UseFieldName, selectScene, valueOf.Field(i).Elem().Interface())
-			} else {
-				tree.ParseValue(tag.UseFieldName, selectScene, valueOf.Field(i).Interface())
+
+			value := valueOf.Field(i)
+		TakeFieldValue:
+			if value.Kind() == reflect.Ptr {
+				if value.IsNil() {
+					if tag.Omitempty {
+						continue
+					}
+					tree.IsNil = true
+					t.AddChild(tree)
+					continue
+				} else {
+					value = value.Elem()
+					goto TakeFieldValue
+				}
 			}
+
+			tree.ParseSelectValue(tag.UseFieldName, selectScene, value.Interface())
+
+			//tree.ParseSelectValue(tag.UseFieldName, selectScene, value.Interface())
+
+			//if valueOf.Field(i).Kind() == reflect.Ptr {
+			//	tree.ParseSelectValue(tag.UseFieldName, selectScene, valueOf.Field(i).Elem().Interface())
+			//} else {
+			//	tree.ParseSelectValue(tag.UseFieldName, selectScene, valueOf.Field(i).Interface())
+			//}
 
 			if t.IsAnonymous {
 				t.AnonymousAddChild(tree)
@@ -88,6 +117,7 @@ TakePointerValue: //取指针的值
 		reflect.Float64, reflect.Float32,
 		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+
 		if t.IsAnonymous {
 			tree := newFieldNodeTree(t.Key, t, t.Val)
 			t.AnonymousAddChild(tree)
@@ -97,16 +127,36 @@ TakePointerValue: //取指针的值
 		}
 
 	case reflect.Map:
+		if valueOf.Kind() == reflect.Ptr {
+			valueOf = valueOf.Elem()
+		}
 		keys := valueOf.MapKeys()
 		if len(keys) == 0 { //空map情况下解析为{}
 			t.Val = struct{}{}
 			return
 		}
 		for i := 0; i < len(keys); i++ {
+			mapIsNil := false
+		takeValMap:
+			val := valueOf.MapIndex(keys[i])
+			if val.Kind() == reflect.Ptr {
+				if val.IsNil() {
+					mapIsNil = true
+					continue
+				} else {
+					val = valueOf.MapIndex(keys[i]).Elem()
+					goto takeValMap
+				}
+			}
 			k := keys[i].String()
 			nodeTree := newFieldNodeTree(k, t)
-			nodeTree.ParseValue(k, selectScene, valueOf.MapIndex(keys[i]).Interface())
-			t.AddChild(nodeTree)
+			if mapIsNil {
+				nodeTree.IsNil = true
+				t.AddChild(nodeTree)
+			} else {
+				nodeTree.ParseSelectValue(k, selectScene, val.Interface())
+				t.AddChild(nodeTree)
+			}
 		}
 
 	case reflect.Slice, reflect.Array:
@@ -117,19 +167,31 @@ TakePointerValue: //取指针的值
 		}
 		t.IsSlice = true
 		for i := 0; i < l; i++ {
+			sliceIsNil := false
+
 			node := newFieldNodeTree("", t)
-			node.ParseValue("", selectScene, valueOf.Index(i).Interface())
-			t.AddChild(node)
+			val := valueOf.Index(i)
+		takeValSlice:
+			if val.Kind() == reflect.Ptr {
+				if val.IsNil() {
+					sliceIsNil = true
+					continue
+				} else {
+					val = val.Elem()
+					goto takeValSlice
+				}
+			}
+
+			if sliceIsNil {
+				node.IsNil = true
+				t.AddChild(node)
+			} else {
+				node.ParseSelectValue("", selectScene, valueOf.Index(i).Interface())
+				t.AddChild(node)
+			}
+
+			//node.ParseSelectValue("", selectScene, valueOf.Index(i).Interface())
+			//t.AddChild(node)
 		}
 	}
 }
-
-func SelectMarshal(selectScene string, el interface{}) string {
-	tree := newFieldNodeTree("", nil)
-	tree.ParseValue("", selectScene, el)
-	return tree.MustJSON()
-}
-
-//func decodeAnonymousField(el interface{})map[string]interface{} {
-//
-//}
