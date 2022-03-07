@@ -50,6 +50,9 @@ func TestNewSelectTag(t *testing.T) {
 	if !got.IsSelect {
 		t.Errorf("IsSelect 应该为true")
 	}
+	if !got.Omitempty {
+		t.Errorf("Omitempty 应该为true")
+	}
 
 	if got.SelectScene != selector {
 		t.Errorf("SelectScene 应为%v 实际%v", selector, got.SelectScene)
@@ -70,13 +73,13 @@ func TestNewSelectTag1(t *testing.T) {
 	got := newSelectTag(tag, "req", "name")
 	fmt.Println(fmt.Sprintf("%+v", got))
 
+	type Book struct {
+		BookName string
+	}
+
 	type User struct {
 		Name string
 		Book
-	}
-
-	type Book struct {
-		BookName string
 	}
 
 	fmt.Println(reflect.TypeOf(User{}).Field(0).Name)
