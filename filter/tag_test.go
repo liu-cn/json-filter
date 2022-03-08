@@ -133,3 +133,17 @@ func BenchmarkTags(b *testing.B) {
 	//PASS
 
 }
+
+func TestOmitTag1(t *testing.T) {
+	tag1 := "name,omit(lang)"
+	tag2 := "name"
+	gotTag1 := newOmitTag(tag1, "lang", "Name")
+	gotTag2 := newOmitTag(tag2, "lang", "Name")
+	fmt.Println(fmt.Sprintf("%+v", gotTag1))
+	//{SelectScene:lang IsOmitField:true IsSelect:false UseFieldName:name IsAnonymous:false Omitempty:false}
+
+	fmt.Println(fmt.Sprintf("%+v", gotTag2))
+	//{SelectScene:lang IsOmitField:false IsSelect:true UseFieldName:name IsAnonymous:false Omitempty:false}
+
+	//ok
+}

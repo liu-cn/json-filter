@@ -15,10 +15,6 @@ func (f Filter) Interface() interface{} {
 	return f.node.Marshal()
 }
 
-//func (f Filter) Map() map[string]interface{} {
-//	return f.node.Map()
-//}
-
 func (f Filter) MustJSON() string {
 	return f.node.MustJSON()
 }

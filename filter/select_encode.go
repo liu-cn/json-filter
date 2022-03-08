@@ -6,8 +6,6 @@ import (
 
 var nilSlice = make([]int, 0, 0)
 
-//var timeType = reflect.TypeOf(time.Now())
-
 const (
 	timeType = "time.Time"
 )
@@ -28,8 +26,6 @@ TakePointerValue: //取指针的值
 		if valueOf.Kind() == reflect.Ptr {
 			if valueOf.IsNil() {
 				t.IsNil = true
-				//tree.IsNil=true
-				//t.AddChild(tree)
 				return
 			} else {
 				valueOf = valueOf.Elem()
@@ -90,14 +86,6 @@ TakePointerValue: //取指针的值
 			}
 
 			tree.ParseSelectValue(tag.UseFieldName, selectScene, value.Interface())
-
-			//tree.ParseSelectValue(tag.UseFieldName, selectScene, value.Interface())
-
-			//if valueOf.Field(i).Kind() == reflect.Ptr {
-			//	tree.ParseSelectValue(tag.UseFieldName, selectScene, valueOf.Field(i).Elem().Interface())
-			//} else {
-			//	tree.ParseSelectValue(tag.UseFieldName, selectScene, valueOf.Field(i).Interface())
-			//}
 
 			if t.IsAnonymous {
 				t.AnonymousAddChild(tree)
@@ -189,9 +177,6 @@ TakePointerValue: //取指针的值
 				node.ParseSelectValue("", selectScene, valueOf.Index(i).Interface())
 				t.AddChild(node)
 			}
-
-			//node.ParseSelectValue("", selectScene, valueOf.Index(i).Interface())
-			//t.AddChild(node)
 		}
 	}
 }

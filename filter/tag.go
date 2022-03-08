@@ -73,6 +73,11 @@ func newOmitTag(tag, omitScene, fieldName string) Tag {
 	tagEl.UseFieldName = fieldName
 
 	if len(tags) < 2 {
+		if len(tags) == 1 {
+			if tags[0] != "" {
+				tagEl.UseFieldName = tags[0]
+			}
+		}
 		return tagEl
 	} else {
 		if tags[0] == "" {
