@@ -526,12 +526,7 @@ func (u User) ChatResp() interface{} {
 		UID: u.UID,
 		Name: u.Name,
 	}
-	jsonStr, err := json.Marshal(chat)  //json-filter解析要比官方的json解析慢。
-	if err!=nil {
-		panic(err)
-	}
-
-	return string(jsonStr)
+	return chat
 }
 ```
 
