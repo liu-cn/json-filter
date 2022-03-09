@@ -57,10 +57,10 @@ func main() {
 
 	user2 := user
 	user2.Hobby = "code"
-	user.Lang = LangAge{
+	user2.Lang = LangAge{
 		Name: "Go",
 	}
 
-	fmt.Println(filter.SelectMarshal("profile", user).MustJSON())
-	//{"lang":{"name":"Go"},"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-09T20:54:36.356453+08:00"}
+	fmt.Println(filter.SelectMarshal("profile", user2).MustJSON())
+	//{"hobby":"code","lang":{"name":"Go"},"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-09T20:58:45.946248+08:00"}
 }
