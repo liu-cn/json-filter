@@ -144,14 +144,16 @@ omit则反之，标记的字段会被排除。
 f:=filter.OmitMarshal("chat",el) //这时Nickname字段就被排除掉了。
 ```
 
-##### omitempty为空忽略
+##### omitempty零值忽略
 
-支持空值忽略，omitempty必须写在结构体字段标签名字后面
-
-仅支持nil类型。比如以下会在article或者profile接口Nickname为nil时直接忽略该字段。
+支持零值忽略，omitempty必须写在结构体字段标签名字后面
 
 ```go
-Nickname *string `json:"nickname,omitempty,select(article|profile)"`
+Nickname *string `json:"nickname,omitempty,select(article|profile)"`   //为nil忽略
+Nickname string `json:"nickname,omitempty,select(article|profile)"`   //为“”忽略
+Age int `json:"age,omitempty,select(article|profile)"` //为0忽略
+
+//空结构体也可以忽略
 ```
 
 
