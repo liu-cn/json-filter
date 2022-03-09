@@ -77,6 +77,11 @@ TakePointerValue: //取指针的值
 					goto TakeFieldValue
 				}
 			}
+			if tag.Omitempty {
+				if value.IsZero() { //为零值忽略
+					continue
+				}
+			}
 
 			tree.ParseOmitValue(tag.UseFieldName, omitScene, value.Interface())
 

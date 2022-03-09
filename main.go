@@ -21,6 +21,14 @@ type User struct {
 	Sex        int       `json:"sex,select(profile)"`          //该字段是仅仅profile才使用
 	VipEndTime time.Time `json:"vip_end_time,select(profile)"` //同上
 	Price      string    `json:"price,select(profile)"`        //同上
+
+	Hobby string  `json:"hobby,omitempty,select($any)"` //任何场景下为空忽略
+	Lang  LangAge `json:"lang,omitempty,select($any)"`  //任何场景下为空忽略
+}
+
+type LangAge struct {
+	Name string `json:"name,omitempty,select($any)"`
+	Art  string `json:"art,omitempty,select($any)"`
 }
 
 func main() {
@@ -39,11 +47,20 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(string(marshal)) //以下是官方的json解析输出结果：可以看到所有的字段都被解析了出来
-	//{"uid":1,"nickname":"boyan","avatar":"avatar","sex":1,"vip_end_time":"2023-03-06T23:11:22.622693+08:00","price":"999.9"}
+	//{"uid":1,"avatar":"avatar","nickname":"boyan","sex":1,"vip_end_time":"2023-03-09T20:52:19.524188+08:00","price":"999.9","lang":{}}
 
 	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 
 	fmt.Println(filter.SelectMarshal("profile", user).MustJSON()) //profile接口下
-	//{"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-06T23:31:28.636529+08:00"}
+	//{"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-09T20:52:19.524188+08:00"}
+
+	user2 := user
+	user2.Hobby = "code"
+	user.Lang = LangAge{
+		Name: "Go",
+	}
+
+	fmt.Println(filter.SelectMarshal("profile", user).MustJSON())
+	//{"lang":{"name":"Go"},"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-09T20:54:36.356453+08:00"}
 }
