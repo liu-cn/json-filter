@@ -85,6 +85,11 @@ TakePointerValue: //取指针的值
 				}
 			}
 
+			if tag.Omitempty {
+				if value.IsZero() { //为零值忽略
+					continue
+				}
+			}
 			tree.ParseSelectValue(tag.UseFieldName, selectScene, value.Interface())
 
 			if t.IsAnonymous {
