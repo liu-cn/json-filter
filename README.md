@@ -1,5 +1,9 @@
 # json-filter
-golang的json过滤器，随意选择字段，随意输出指定结构体的字段
+golang的json字段过滤器，随意选择字段，随意输出指定结构体的字段，复用结构体。
+
+视频教程快速入门：https://www.bilibili.com/video/BV1ba411b7m1/
+
+
 
 大纲：
 
@@ -33,7 +37,7 @@ golang的json过滤器，随意选择字段，随意输出指定结构体的字�
 2. map
 3. 数组/切片
 4. 复杂的结构体，嵌套指针嵌套数组嵌套map 嵌套匿名结构体等。
-
+5. 支持为空忽略，
 
 
 #### 1分钟入门
@@ -140,9 +144,19 @@ omit则反之，标记的字段会被排除。
 f:=filter.OmitMarshal("chat",el) //这时Nickname字段就被排除掉了。
 ```
 
+##### omitempty为空忽略
+
+支持空值忽略，omitempty必须写在结构体字段标签名字后面
+
+仅支持nil类型。比如以下会在article或者profile接口Nickname为nil时直接忽略该字段。
+
+```go
+Nickname *string `json:"nickname,omitempty,select(article|profile)"`
+```
+
+
+
 #### $any标识符任意场景解析
-
-
 
 你可能想要某个字段在任意场景下都被选中/或者任意场景都排除该字段，但是又不想在任何场景都写一遍。这样可以用$any 标识符干净整洁的完成你的需求。
 
