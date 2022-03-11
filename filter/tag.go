@@ -101,12 +101,6 @@ func newOmitTag(tag, omitScene, fieldName string) Tag {
 					tagEl.IsSelect = false
 					return tagEl
 				}
-				//if v==empty{
-				//	//为空忽略
-				//	tagEl.IsOmitField = false
-				//	tagEl.IsSelect = true
-				//	tagEl.Omitempty=true
-				//}
 			}
 		}
 	}

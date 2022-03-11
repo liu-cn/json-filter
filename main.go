@@ -22,8 +22,8 @@ type User struct {
 	VipEndTime time.Time `json:"vip_end_time,select(profile)"` //同上
 	Price      string    `json:"price,select(profile)"`        //同上
 
-	Hobby string  `json:"hobby,omitempty,select($any)"` //任何场景下为空忽略
-	Lang  LangAge `json:"lang,omitempty,select($any)"`  //任何场景下为空忽略
+	Hobby string    `json:"hobby,omitempty,select($any)"` //任何场景下为空忽略
+	Lang  []LangAge `json:"lang,omitempty,select($any)"`  //任何场景下为空忽略
 }
 
 type LangAge struct {
@@ -57,8 +57,13 @@ func main() {
 
 	user2 := user
 	user2.Hobby = "code"
-	user2.Lang = LangAge{
-		Name: "Go",
+	user2.Lang = []LangAge{
+		{
+			Name: "Go",
+		},
+		{
+			Name: "c",
+		},
 	}
 
 	fmt.Println(filter.SelectMarshal("profile", user2).MustJSON())

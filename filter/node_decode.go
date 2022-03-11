@@ -46,7 +46,6 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 				slices = append(slices, value)
 			}
 		}
-		//t.Val = slices
 		return slices, true
 	}
 	maps := make(map[string]interface{})
@@ -54,12 +53,8 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 		value, ok1 := (*v).GetValue()
 		if ok1 {
 			maps[(*v).Key] = value
-			//if value != nil {
-			//	maps[(*v).Key] = value
-			//}
 		}
 	}
-	//t.Val = maps
 	return maps, true
 }
 
@@ -73,17 +68,20 @@ func (t *fieldNodeTree) Map() map[string]interface{} {
 	}
 	return maps
 }
+func (t *fieldNodeTree) Slice() interface{} {
+	slices := make([]interface{}, 0, len(t.Child))
+	for i := 0; i < len(t.Child); i++ {
+		v, ok := t.Child[i].GetValue()
+		if ok {
+			slices = append(slices, v)
+		}
+	}
+	return slices
+}
 
 func (t *fieldNodeTree) Marshal() interface{} {
 	if t.IsSlice {
-		slices := make([]interface{}, 0, len(t.Child))
-		for i := 0; i < len(t.Child); i++ {
-			v, ok := t.Child[i].GetValue()
-			if ok {
-				slices = append(slices, v)
-			}
-		}
-		return slices
+		return t.Slice()
 	} else { //说明是结构体或者map
 		return t.Map()
 	}
@@ -161,15 +159,4 @@ func (t *fieldNodeTree) MustBytes() []byte {
 		panic(err)
 	}
 	return j
-}
-
-func newFieldNodeTree(key string, parentNode *fieldNodeTree, val ...interface{}) *fieldNodeTree {
-	f := &fieldNodeTree{
-		Key:        key,
-		ParentNode: parentNode,
-	}
-	if len(val) > 0 {
-		f.Val = val[0]
-	}
-	return f
 }

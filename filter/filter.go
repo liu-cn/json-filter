@@ -24,7 +24,10 @@ func (f Filter) JSON() (string, error) {
 }
 
 func SelectMarshal(selectScene string, el interface{}) Filter {
-	tree := newFieldNodeTree("", nil)
+	tree := &fieldNodeTree{
+		Key:        "",
+		ParentNode: nil,
+	}
 	tree.ParseSelectValue("", selectScene, el)
 	return Filter{
 		node: tree,
@@ -32,7 +35,10 @@ func SelectMarshal(selectScene string, el interface{}) Filter {
 }
 
 func OmitMarshal(omitScene string, el interface{}) Filter {
-	tree := newFieldNodeTree("", nil)
+	tree := &fieldNodeTree{
+		Key:        "",
+		ParentNode: nil,
+	}
 	tree.ParseOmitValue("", omitScene, el)
 	return Filter{
 		node: tree,

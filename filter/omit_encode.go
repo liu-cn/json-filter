@@ -105,7 +105,11 @@ TakePointerValue: //取指针的值
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 
 		if t.IsAnonymous {
-			tree := newFieldNodeTree(t.Key, t, t.Val)
+			tree := &fieldNodeTree{
+				Key:        t.Key,
+				ParentNode: t,
+				Val:        t.Val,
+			}
 			t.AnonymousAddChild(tree)
 		} else {
 			t.Val = valueOf.Interface()
@@ -135,7 +139,10 @@ TakePointerValue: //取指针的值
 				}
 			}
 			k := keys[i].String()
-			nodeTree := newFieldNodeTree(k, t)
+			nodeTree := &fieldNodeTree{
+				Key:        k,
+				ParentNode: t,
+			}
 			if mapIsNil {
 				nodeTree.IsNil = true
 				t.AddChild(nodeTree)
@@ -155,7 +162,11 @@ TakePointerValue: //取指针的值
 		for i := 0; i < l; i++ {
 			sliceIsNil := false
 
-			node := newFieldNodeTree("", t)
+			//node := newFieldNodeTree("", t)
+			node := &fieldNodeTree{
+				Key:        "",
+				ParentNode: t,
+			}
 			val := valueOf.Index(i)
 		takeValSlice:
 			if val.Kind() == reflect.Ptr {
@@ -175,9 +186,6 @@ TakePointerValue: //取指针的值
 				node.ParseOmitValue("", omitScene, valueOf.Index(i).Interface())
 				t.AddChild(node)
 			}
-
-			//node.ParseSelectValue("", omitScene, valueOf.Index(i).Interface())
-			//t.AddChild(node)
 		}
 	}
 }
