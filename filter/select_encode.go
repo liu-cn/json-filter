@@ -102,8 +102,7 @@ TakePointerValue: //取指针的值
 			//t.Val = struct{}{} //这样表示返回{}
 
 			t.IsAnonymous = true //给他搞成匿名字段的处理方式，直接忽略字段
-			//TODO 说明该结构体上没有选择任何字段 应该返回"字段名:{}"？还是直接连字段名都不显示？ 我也不清楚怎么好，后面再说
-			//算了反正你啥也不选这字段留着也没任何意义，要就不显示了，至少还能节省一点空间
+			//说明该结构体上没有选择任何字段 应该返回"字段名:{}"
 		}
 	case reflect.Bool,
 		reflect.String,
@@ -112,7 +111,11 @@ TakePointerValue: //取指针的值
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 
 		if t.IsAnonymous {
-			tree := newFieldNodeTree(t.Key, t, t.Val)
+			tree := &fieldNodeTree{
+				Key:        t.Key,
+				ParentNode: t,
+				Val:        t.Val,
+			}
 			t.AnonymousAddChild(tree)
 		} else {
 			t.Val = valueOf.Interface()
@@ -142,7 +145,10 @@ TakePointerValue: //取指针的值
 				}
 			}
 			k := keys[i].String()
-			nodeTree := newFieldNodeTree(k, t)
+			nodeTree := &fieldNodeTree{
+				Key:        k,
+				ParentNode: t,
+			}
 			if mapIsNil {
 				nodeTree.IsNil = true
 				t.AddChild(nodeTree)
@@ -155,14 +161,16 @@ TakePointerValue: //取指针的值
 	case reflect.Slice, reflect.Array:
 		l := valueOf.Len()
 		if l == 0 {
-			t.Val = nilSlice //空数组空切片直接解析为[],原生的json解析空的切片和数组会被解析为null，真的很烦，遇到脾气暴躁的前端直接跟你开撕。
+			t.Val = nilSlice //空数组空切片直接解析为[]
 			return
 		}
 		t.IsSlice = true
 		for i := 0; i < l; i++ {
 			sliceIsNil := false
-
-			node := newFieldNodeTree("", t)
+			node := &fieldNodeTree{
+				Key:        "",
+				ParentNode: t,
+			}
 			val := valueOf.Index(i)
 		takeValSlice:
 			if val.Kind() == reflect.Ptr {
@@ -174,7 +182,6 @@ TakePointerValue: //取指针的值
 					goto takeValSlice
 				}
 			}
-
 			if sliceIsNil {
 				node.IsNil = true
 				t.AddChild(node)
