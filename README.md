@@ -151,7 +151,7 @@ f:=filter.OmitMarshal("chat",el) //The nickname field is then excluded.
 
 ##### Omitempty zero value ignored
 
-支持零值忽略，omitempty必须写在结构体字段标签名字后面
+Zero value ignoring is supported, and the omitempty must be written after the label name of the structure field
 
 ```go
 Nickname *string `json:"nickname,omitempty,select(article|profile)"`   //nil Omitempty
@@ -174,9 +174,9 @@ type User struct {
 }
 
 //In this way, no matter any case
-SelectMarshal("无论这里选择任何场景", user)//无论何种场景都会输出UID的字段。
+SelectMarshal("Whatever case you choose here", user)//No matter what kind of case, the field of uid will be output.
 
-OmitMarshal("无论这里选择任何场景",user)//无论何种场景都会排除password 字段。
+OmitMarshal("Whatever case you choose here",user)//The password field is excluded in any scenario.
 
 
 ```
