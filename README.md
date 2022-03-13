@@ -1,11 +1,636 @@
 # json-filter
+切换语言：
+
+​		[简体中文](#简体中文)
+
+​		[English](#English)
+
+## English
+
+Golang's JSON field filter can select fields at will, output fields of specified structures at will, and reuse structures.
+
+list：
+
+[Learn it in 1 minute](#Learn it in 1 minute)
+
+[Select filter](#Select filter)
+
+[Omit selector exclusion filter](#Omit selector exclusion filter)
+
+[$any will select this field in any case](#$any will select this field in any case)
+
+[Method of filtering filter structure](#Method of filtering filter structure)
+
+[Advanced Usage](#Advanced Usage)
+
+[Extremely complex scene deep nesting - structure nesting - structure nesting - slice nesting - map nesting - pointer nesting - and so on](#Extremely complex scene deep nesting - structure nesting - structure nesting - slice nesting - map nesting - pointer nesting - and so on)
+
+[Recommended posture](#Recommended posture)
+
+[Return the demo of JSON in gin](#Return the demo of JSON in gin)
+
+[Don't want to be parsed directly into JSON strings?](#Don't want to be parsed directly into JSON strings?)
+
+
+
+Support direct filtering of the following data structures
+
+1. struct（Include anonymous structures）
+
+2. map
+
+3. array/slice
+
+4. pointer nesting
+
+5. Omitempty zero value ignored
+
+#### Learn it in 1 minute
+
+```go
+//First, you need to introduce the following package：
+github.com/liu-cn/json-filter/filter
+```
+
+
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/liu-cn/json-filter/filter"
+)
+
+//For the same structure, you may want to return only uid and avatar nickname fields under the article interface. Other fields do not want to be exposed
+
+//In addition, you also want to return the four fields of nickname sex vipendtime price under the profile interface. Other fields do not want to be exposed
+
+//There are many such situations. If you want to reuse a structure to construct the JSON data structure you want, you can see a simple demo
+
+type User struct {
+	UID    uint   `json:"uid,select(article)"`    //elect indicates the selected scene (the case that this field will use)
+	Avatar string `json:"avatar,select(article)"` //As above, this field will only be resolved when the article interface
+
+	Nickname string `json:"nickname,select(article|profile)"` //"｜"It means that this field is required for multiple cases. The article interface and the profile interface are also required
+
+	Sex        int       `json:"sex,select(profile)"`          //This field is only used by profile
+	VipEndTime time.Time `json:"vip_end_time,select(profile)"` //ditto
+	Price      string    `json:"price,select(profile)"`        //ditto
+}
+
+func main() {
+
+	user := User{
+		UID:        1,
+		Nickname:   "boyan",
+		Avatar:     "avatar",
+		Sex:        1,
+		VipEndTime: time.Now().Add(time.Hour * 24 * 365),
+		Price:      "999.9",
+	}
+
+	marshal, err := json.Marshal(user)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(marshal)) //The following is the official JSON parsing output: you can see that all fields have been parsed
+	//{"uid":1,"nickname":"boyan","avatar":"avatar","sex":1,"vip_end_time":"2023-03-06T23:11:22.622693+08:00","price":"999.9"}
+
+  
+  //usage：filter.SelectMarshal("select case",This can be：slice/array/struct/pointer/map)
+	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //The following is the JSON filtered by JSON filter. This output is the JSON under the article interface
+	//{"avatar":"avatar","nickname":"boyan","uid":1}
+
+	fmt.Println(filter.SelectMarshal("profile", user).MustJSON()) //profile result
+	//{"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-06T23:31:28.636529+08:00"}
+}
+
+```
+
+
+
+##### The reason for doing this
+
+I don't want to expose other unnecessary fields, and I don't want to rebuild a struct and assign values to fields one by one (lazy). However, too many models mean that the maintenance cost will be higher,
+Returning more fields is unsafe and means that more data needs to be transmitted, which means that bandwidth resources will be wasted and encoding and decoding will be more time-consuming,
+Sometimes I've seen someone serialize a structure and return it in order to be lazy, with many useless fields on it. Maybe only 4-5 fields are useful,
+Most other fields are useless, which not only affects reading but also wastes bandwidth, so maybe you can try to filter the fields you want with JSON filter,
+Not only simple, but more importantly, very powerful and complex structures can also filter out the fields you want.
+
+
+
+#### Filtering mode
+
+##### Select filter
+
+As mentioned in the quick start of select selector, you should know the usage. The fields marked by select selector will be selected, and omit will be the opposite
+
+```go
+type User struct {
+	UID    uint   `json:"uid,select(article)"`
+	Avatar string `json:"avatar,select(article)"`
+	Nickname string `json:"nickname,select(article|profile),omit(chat)"`
+}
+```
+
+##### Omit selector exclusion filter
+
+Omit, on the contrary, the marked fields will be excluded.
+Because sometimes in a scene, many fields in a structure need to exclude 2-3 fields, and most fields are required. At this time, selecting through select is too verbose.
+For example, if you want to use the fields uid and avatar under the private message interface (ChAT), you can directly exclude the scene of the chat interface from the field nickel
+At this time, you need to add omit (excluded scene | scene 0 | Scene 1 | scene n) to the structure tag of nickname
+At this time, you need to call
+
+```go
+f:=filter.OmitMarshal("chat",el) //The nickname field is then excluded.
+```
+
+##### Omitempty zero value ignored
+
+支持零值忽略，omitempty必须写在结构体字段标签名字后面
+
+```go
+Nickname *string `json:"nickname,omitempty,select(article|profile)"`   //nil Omitempty
+Nickname string `json:"nickname,omitempty,select(article|profile)"`   //“” Omitempty
+Age int `json:"age,omitempty,select(article|profile)"` //0 Omitempty
+
+//Empty structures can also be ignored
+```
+
+
+
+#### $any will select this field in any case
+
+You may want a field to be selected in any scenario and / or excluded from any scenario, but you don't want to write it again in any scenario. In this way, you can use the $any identifier to complete your requirements cleanly and neatly.
+
+```go
+type User struct {
+	UID    uint   `json:"uid,select($any)"`
+  Password string `json:"password,omit($any)"`
+}
+
+//In this way, no matter any case
+SelectMarshal("无论这里选择任何场景", user)//无论何种场景都会输出UID的字段。
+
+OmitMarshal("无论这里选择任何场景",user)//无论何种场景都会排除password 字段。
+
+
+```
+
+
+
+#### Method of filtering filter structure
+
+##### Filter.Interface
+
+Filtered JSON data structure, (which can be encoded by JSON)
+
+```go
+usage method
+
+f:=filter.SelectMarshal("case",el) //el：array/slice/struct/map
+
+A filtered filter structure will be returned. You can call the specified method to obtain the specified data as needed.
+
+f.Interface()---->Return a data structure that has not been parsed. At this time, you can directly use the official JSON Marshal () to serialize into filtered JSON strings.
+ps：
+  f:=filter.SelectMarshal("场景",el) 
+  json.Marshal(f.Interface()) //Equivalent to json.Marshal(filter.SelectMarshal("case",el).Interface()) 
+```
+
+
+
+##### Filter.MustJSON
+
+Directly encoded JSON string after filtering
+The method of must prefix will not return err. If err is encountered in the process of use, it doesn't matter if it is used in the test. It must be used in the project to ensure that the structure is correct.
+
+```go
+fmt.Println(f.MustJSON()) //---> You don't need to go to JSON like that Marshall, because this is the returned JSON string directly
+
+//If you want to use this method safely, use F. JSON () to return a JSON string and err
+	j, err := f.JSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(j)
+```
+
+
+
+#### Advanced Usage
+
+##### Filtering for map
+
+```go
+m := map[string]interface{}{
+		"name": "哈哈",
+		"struct": User{     //This structure is also the first user structure used
+			UID:        1,
+			Nickname:   "boyan",
+			Avatar:     "avatar",
+			Sex:        1,
+			VipEndTime: time.Now().Add(time.Hour * 24 * 365),
+			Price:      "999.9",
+		},
+	}
+
+	fmt.Println(filter.SelectMarshal("article", m).MustJSON())
+//{"name":"哈哈","struct":{"avatar":"avatar","nickname":"boyan","uid":1}}
+//You can see that the map can also be filtered directly.
+
+```
+
+
+
+##### Direct filtering for slices / arrays
+
+It fully supports the direct filtering of arrays and slices.
+
+```go
+func main() {
+	type Tag struct {
+		ID   uint   `json:"id,select(all)"`
+		Name string `json:"name,select(justName|all)"`
+		Icon string `json:"icon,select(chat|profile|all)"`
+	}
+
+	tags := []Tag{   //Both slices and arrays are supported
+		{
+			ID:   1,
+			Name: "c",
+			Icon: "icon-c",
+		},
+		{
+			ID:   1,
+			Name: "c++",
+			Icon: "icon-c++",
+		},
+		{
+			ID:   1,
+			Name: "go",
+			Icon: "icon-go",
+		},
+	}
+
+	fmt.Println(filter.SelectMarshal("justName", tags))
+	//--->output： [{"name":"c"},{"name":"c++"},{"name":"go"}]
+
+	fmt.Println(filter.SelectMarshal("all", tags))
+	//--->output： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
+
+	fmt.Println(filter.SelectMarshal("chat", tags))
+	//--->output： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
+
+}
+```
+
+
+
+
+
+##### Filtering anonymous structures
+
+The embedded anonymous structure is also fully supported, and the support is very good.
+Expand structure
+
+```go
+type Page struct {
+	PageInfo int `json:"pageInfo,select($any)"`
+	PageNum  int `json:"pageNum,select($any)"`
+}
+
+type Article struct {
+	Title  string `json:"title,select(article)"`
+	Page   `json:",select(article)"`     // In this way, if the tag field name is empty, the structure will be expanded directly and treated as an anonymous structure
+  //Page `json:"page,select(article)"` // Note that the tag here is marked with the field name of the anonymous structure, so it will be resolved into an object during parsing and will not be expanded
+	Author string `json:"author,select(admin)"`
+}
+
+func main() {
+
+	article := Article{
+		Title: "c++从研发到脱发",
+		Page: Page{
+			PageInfo: 999,
+			PageNum:  1,
+		},
+	}
+
+	articleJson := filter.SelectMarshal("article", article)
+	fmt.Println(articleJson)
+  //output--->  {"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}
+}
+
+```
+
+###### Do not want to expand the structure
+
+```go
+//It's also possible not to expand the page structure. It's very simple to add the structure label signature of the anonymous Structure page
+//Next put
+Page `json:",select(article)"`change into
+Page   `json:"page,select(article)"`
+
+//Next, take a look at the output effect. You can see that the field is not expanded
+{"page":{"pageInfo":999,"pageNum":1},"title":"c++从研发到脱发"}
+```
+
+
+
+##### Extremely complex scene deep nesting - structure nesting - structure nesting - slice nesting - map nesting - pointer nesting - and so on
+
+In fact, JSON filter can do more than that. Nested various complex data types can be parsed correctly.
+Let's look at a relatively complex structure.
+
+```go
+This is a rather complex structure,
+type Users struct {
+	UID          uint   `json:"uid,select($any)"`
+	Name         string `json:"name,select(comment|chat|profile|justName)"`
+	Age          int    `json:"age,select(comment|chat|profile)"`
+	Avatar       string `json:"avatar,select(comment|chat|profile)"`
+	Birthday     int    `json:"birthday,select(profile)"`
+	Password     string `json:"password"`
+	PasswordSlat string `json:"password_slat"`
+	LangAge      []Lang `json:"langAge,select(profile|lookup|lang)"`
+}
+
+type Lang struct {
+	Name string `json:"name,select(profile|lang)"`
+	Arts []*Art `json:"arts,select(profile|lookup)"`
+}
+
+type Art struct {
+	Name    string                 `json:"name,select(profile)"`
+	Profile map[string]interface{} `json:"profile,select(profile|lookup)"`
+	Values  []string               `json:"values,select(profile|lookup)"`
+}
+
+func NewUser() Users {
+	return Users{
+		UID:          1,
+		Name:         "boyan",
+		Age:          20,
+		Avatar:       "https://www.avatar.com",
+		Birthday:     2001,
+		PasswordSlat: "slat",
+		Password:     "123",
+		LangAge: []Lang{
+			{
+				Name: "c",
+				Arts: []*Art{
+					{
+						Name: "cc",
+						Profile: map[string]interface{}{
+							"c": "clang",
+						},
+						Values: []string{"1", "2"},
+					},
+				},
+			},
+			{
+				Name: "c++",
+				Arts: []*Art{
+					{
+						Name: "c++",
+						Profile: map[string]interface{}{
+							"c++": "cpp",
+						},
+						Values: []string{"cpp1", "cpp2"},
+					},
+				},
+			},
+			{
+				Name: "Go",
+				Arts: []*Art{
+					{
+						Name: "Golang",
+						Profile: map[string]interface{}{
+							"Golang": "go",
+						},
+						Values: []string{"Golang", "Golang1"},
+					},
+				},
+			},
+		},
+	}
+}
+
+
+func main() {
+  user:=NewUser()
+  
+  
+  //Let's take a look at the data parsed by the native JSON and parse all the fields.
+  jsonStr, _ := json.Marshal(user)
+ 	fmt.Println(string(jsonStr))//
+//{"uid":1,"name":"boyan","age":20,"avatar":"https://www.avatar.com","birthday":2001,"password":"123","password_slat":"slat","langAge":[{"name":"c","arts":[{"name":"cc","profile":{"c":"clang"},"values":["1","2"]}]},{"name":"c++","arts":[{"name":"c++","profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"name":"Go","arts":[{"name":"Golang","profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}]}
+
+  
+ // If I only want to add some user information related to the programming language
+  lang := filter.SelectMarshal("lang", user)
+	fmt.Println(lang)
+	//{"langAge":[{"name":"c"},{"name":"c++"},{"name":"Go"}],"uid":1}
+  
+  //format
+  {
+    "langAge":[
+        {
+            "name":"c"
+        },
+        {
+            "name":"c++"
+        },
+        {
+            "name":"Go"
+        }
+    ],
+    "uid":1
+	}
+  
+  //If I just want to get some field information of uid and all arts under langage, you can do this
+ lookup := filter.SelectMarshal("lookup", user)
+	fmt.Println(lookup)
+	//{"langAge":[{"arts":[{"profile":{"c":"clang"},"values":["1","2"]}]},{"arts":[{"profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"arts":[{"profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}],"uid":1}
+  
+  
+//After formatting, you can see that the name under arts is not displayed,
+  {
+    "langAge":[
+        {
+            "arts":[
+                {
+                    "profile":{
+                        "c":"clang"
+                    },
+                    "values":[
+                        "1",
+                        "2"
+                    ]
+                }
+            ]
+        },
+        {
+            "arts":[
+                {
+                    "profile":{
+                        "c++":"cpp"
+                    },
+                    "values":[
+                        "cpp1",
+                        "cpp2"
+                    ]
+                }
+            ]
+        },
+        {
+            "arts":[
+                {
+                    "profile":{
+                        "Golang":"go"
+                    },
+                    "values":[
+                        "Golang",
+                        "Golang1"
+                    ]
+                }
+            ]
+        }
+    ],
+    "uid":1
+	}
+}
+//Deep nested data structures can also be parsed correctly, but it is not recommended that the data structure is too complex, which will consume too much performance. In general, there is no problem with the parsing performance in scenarios. Unless you have high performance requirements, you may need to manually create a struct and assign values to fields one by one.
+
+```
+
+
+
+#### Recommended posture
+
+```go
+type User struct {
+	UID    uint        `json:"uid,select($any)"` //Marked with $any, this parameter will be resolved no matter which case is selected
+	Name   string      `json:"name,select(article|profile|chat)"`
+	Avatar interface{} `json:"data,select(profile|chat)"`
+}
+
+func (u User) ArticleResp() interface{} {
+	//In this way, when you want to optimize the performance later, you can optimize it here,
+	return filter.SelectMarshal("article",u).Interface()
+}
+
+func (u User) ProfileResp() interface{} {
+	//In this way, when you want to optimize the performance later, you can optimize it here,
+	return filter.SelectMarshal("profile",u).Interface()
+}
+
+func (u User) ChatResp() interface{} {
+	//If there is a performance bottleneck, you want to optimize it
+	chat:= struct {
+		UID    uint        `json:"uid"`
+		Name   string  `json:"name"`
+	}{
+		UID: u.UID,
+		Name: u.Name,
+	}
+	return chat
+}
+```
+
+
+
+#### Return the demo of JSON in gin
+
+I see many people like to use gin, so I'll make a simple demo
+
+```go
+type User struct {
+	UID    uint   `json:"uid,select(article|profile)"` //This adds an article case to select()
+	Sex    int    `json:"sex,select(profile)"`         //It will not be resolved by the article case, and this field will be ignored directly when filtering the article case.
+	Avatar string `json:"avatar,select(article)"`      //Will be resolved by the article case
+}
+
+func (u User) FilterProfile() interface{} {
+	return filter.SelectMarshal("profile", u).Interface()
+}
+
+func main() {
+	r := gin.New()
+	r.GET("/user", GetUser)
+	r.GET("/user/filter", GetUserFilter)
+	log.Fatal(r.Run(":8080"))
+}
+
+func GetUserFilter(c *gin.Context) {
+	user := User{
+		UID:    1,
+		Sex:    1,
+		Avatar: "avatar",
+	}
+	c.JSON(200, user.FilterProfile())
+	//{
+	//  "sex": 1,
+	//  "uid": 1
+	//}
+}
+func GetUser(c *gin.Context) {
+	user := User{
+		UID:    1,
+		Sex:    1,
+		Avatar: "avatar",
+	}
+
+	c.JSON(200, user)
+	//{
+	//	"uid": 1,
+	//	"sex": 1,
+	//	"avatar": "avatar"
+	//}
+}
+
+```
+
+#### Don't want to be parsed directly into JSON strings?
+
+You may not want to directly parse into a string. You want to filter it and then hang it to other structures for parsing. If it is parsed into a string and mounted, it will be parsed as a string, so it is also supported.
+
+```go
+func OkWithData(data interface{}, c *gin.Context) {
+	c.JSON(200, Response{
+		Code: 0,
+		Msg:  "ok",
+		Data: data, //The data should be a structure or the map should not be a JSON string that has been parsed
+	})
+}
+
+func UserRes(c *gin.Context) {
+  user := User{
+		UID:    1,
+		Sex:    1,
+		Avatar: "avatar",
+	}
+  
+	OkWithData(filter.SelectMarshal("profile", user).Interface(), c)
+}
+```
+
+
+
+
+
+### 简体中文
+
 golang的json字段过滤器，随意选择字段，随意输出指定结构体的字段，复用结构体。
 
 视频教程快速入门：https://www.bilibili.com/video/BV1ba411b7m1/
 
 **代码有很多值得优化和改进的地方，非常欢迎大家一起参与贡献代码，优化代码，贡献文档，提意见，后面会持续优化，希望能变得更强，开源项目全靠用爱发电。**
-
-
 
 大纲：
 
@@ -93,6 +718,7 @@ func main() {
 	fmt.Println(string(marshal)) //以下是官方的json解析输出结果：可以看到所有的字段都被解析了出来
 	//{"uid":1,"nickname":"boyan","avatar":"avatar","sex":1,"vip_end_time":"2023-03-06T23:11:22.622693+08:00","price":"999.9"}
 
+  //用法：filter.SelectMarshal("select里的一个场景",这里可以是slice/array/struct/pointer/map)
 	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 

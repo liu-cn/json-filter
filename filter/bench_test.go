@@ -1,38 +1,11 @@
-package main
+package filter
 
 import (
-	"github.com/liu-cn/json-filter/filter"
-	"log"
-	"net/http"
-	_ "net/http/pprof"
-	"os"
-	"runtime"
+	"testing"
 	"time"
 )
 
-var j string
-
-func main() {
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	log.SetOutput(os.Stdout)
-
-	runtime.GOMAXPROCS(1)
-	runtime.SetMutexProfileFraction(1)
-	runtime.SetBlockProfileRate(1)
-
-	go func() {
-		if err := http.ListenAndServe(":6060", nil); err != nil {
-			log.Fatal(err)
-		}
-		os.Exit(0)
-	}()
-
-	for {
-		j = filter.SelectMarshal("article", newUser()).MustJSON()
-	}
-}
-
-type User struct {
+type Users struct {
 	UID    uint   `json:"uid,select(article)"`    //select中表示选中的场景(该字段将会使用到的场景)
 	Avatar string `json:"avatar,select(article)"` //和上面一样此字段在article接口时才会解析该字段
 
@@ -51,8 +24,8 @@ type LangAge struct {
 	Art  string `json:"art,omitempty,select($any)"`
 }
 
-func newUser() User {
-	return User{
+func newUsers() Users {
+	return Users{
 		UID:        1,
 		Nickname:   "boyan",
 		Avatar:     "avatar",
@@ -69,5 +42,20 @@ func newUser() User {
 				Art:  "35",
 			},
 		},
+	}
+}
+
+var str string
+
+func BenchmarkUserPointer(b *testing.B) {
+	user := newUsers()
+	for i := 0; i < b.N; i++ {
+		str = SelectMarshal("article", &user).MustJSON()
+	}
+}
+func BenchmarkUserVal(b *testing.B) {
+	user := newUsers()
+	for i := 0; i < b.N; i++ {
+		str = SelectMarshal("article", user).MustJSON()
 	}
 }
