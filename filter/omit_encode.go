@@ -31,6 +31,11 @@ TakePointerValue: //取指针的值
 			t.Val = struct{}{}
 			return
 		}
+		if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
+			t.Key = key
+			t.Val = valueOf.Interface()
+			return
+		}
 		for i := 0; i < typeOf.NumField(); i++ {
 			jsonTag, ok := typeOf.Field(i).Tag.Lookup("json")
 			if !ok || jsonTag == "-" {
@@ -75,11 +80,6 @@ TakePointerValue: //取指针的值
 				if value.IsZero() { //为零值忽略
 					continue
 				}
-			}
-			if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
-				t.Key = key
-				t.Val = valueOf.Interface()
-				return
 			}
 
 			tree.ParseOmitValue(tag.UseFieldName, omitScene, value.Interface())
