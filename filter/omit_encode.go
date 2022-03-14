@@ -1,6 +1,8 @@
 package filter
 
-import "reflect"
+import (
+	"reflect"
+)
 
 func (t *fieldNodeTree) ParseOmitValue(key, omitScene string, el interface{}) {
 
@@ -26,14 +28,14 @@ TakePointerValue: //取指针的值
 			}
 		}
 
-		if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
-			t.Key = key
-			t.Val = struct{}{}
-			return
-		}
 		if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
 			t.Key = key
 			t.Val = valueOf.Interface()
+			return
+		}
+		if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
+			t.Key = key
+			t.Val = struct{}{}
 			return
 		}
 		for i := 0; i < typeOf.NumField(); i++ {
