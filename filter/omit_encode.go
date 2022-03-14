@@ -26,11 +26,16 @@ TakePointerValue: //取指针的值
 			}
 		}
 
-		if typeOf.String() == timeType { //是time.Time类型或者底层是time.Time类型
+		if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
 			t.Key = key
 			t.Val = valueOf.Interface()
-			return
 		}
+
+		//if typeOf.String() == timeType { //是time.Time类型或者底层是time.Time类型
+		//	t.Key = key
+		//	t.Val = valueOf.Interface()
+		//	return
+		//}
 
 		if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
 			t.Key = key
