@@ -11,10 +11,6 @@ var (
 	timeTypes = reflect.TypeOf(time.Now())
 )
 
-const (
-	timeType = "time.Time"
-)
-
 // ParseSelectValue 解析字段值
 func (t *fieldNodeTree) ParseSelectValue(key, selectScene string, el interface{}) {
 
@@ -44,12 +40,6 @@ TakePointerValue: //取指针的值
 			t.Val = valueOf.Interface()
 			return
 		}
-
-		//if typeOf.String() == timeType { //是time.Time类型或者底层是time.Time类型
-		//	t.Key = key
-		//	t.Val = valueOf.Interface()
-		//	return
-		//}
 
 		if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
 			t.Key = key
