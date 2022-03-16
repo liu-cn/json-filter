@@ -53,6 +53,7 @@ func BenchmarkUserPointer(b *testing.B) {
 		str = SelectMarshal("article", &user).MustJSON()
 	}
 }
+
 func BenchmarkUserVal(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
