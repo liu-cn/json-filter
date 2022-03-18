@@ -106,3 +106,11 @@ func newOmitTag(tag, omitScene, fieldName string) Tag {
 	}
 	return tagEl
 }
+
+func newOmitNotTag(omitScene, fieldName string) Tag {
+	return Tag{
+		IsSelect:     true,
+		UseFieldName: fieldName,
+		SelectScene:  omitScene,
+	}
+}

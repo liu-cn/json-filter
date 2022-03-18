@@ -1,0 +1,60 @@
+package test
+
+import (
+	"fmt"
+	"github.com/liu-cn/json-filter/filter"
+	"testing"
+)
+
+
+
+//完全兼容泛型，
+//Fully compatible generics
+
+
+
+type Lang struct {
+	Name     string `json:"name,select(article)"`
+	IsStatic bool   `json:"is_static,select(article)"`
+}
+
+type User[T, K, V any] struct {
+	Nickname string `json:"nickname,select(article|chat)"`
+
+	Data  T  `json:"data,select(article)"`
+	Data1 *T `json:"data1,select(article)"`
+
+	K  K  `json:"k,select(article)"`
+	KP *K `json:"k_p,select(article)"`
+	V  V  `json:"v,select(article)"`
+	VP *V `json:"vp,select(article)"`
+}
+
+func NewUser() User[Lang, string, int] {
+	k := "key"
+	v := 10
+	return User[Lang, string, int]{
+		Nickname: "boyan",
+		Data: Lang{
+			Name:     "go",
+			IsStatic: true,
+		},
+		Data1: &Lang{
+			Name:     "c++",
+			IsStatic: true,
+		},
+		K:  k,
+		KP: &k,
+		V:  v,
+		VP: &v,
+	}
+}
+
+func TestJson(t *testing.T) {
+	fmt.Println(filter.SelectMarshal("article", NewUser()).MustJSON())
+	//{"data":{"is_static":true,"name":"go"},"data1":{"is_static":true,"name":"c++"},"k":"key","k_p":"key","nickname":"boyan","v":10,"vp":10}
+
+
+	fmt.Println(filter.SelectMarshal("chat", NewUser()).MustJSON())
+	//{"nickname":"boyan"}
+}

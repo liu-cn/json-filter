@@ -7,7 +7,7 @@
 
 ## English
 
-Golang's JSON field filter can select fields at will, output fields of specified structures at will, and reuse structures.
+Golang's JSON field filter can select fields at will, output fields of specified structures at will, and reuse structures.  **It fully supports generics** and is perfectly compatible with go 1.18 and 1.17 and below
 
 list：
 
@@ -277,13 +277,13 @@ func main() {
 		},
 	}
 
-	fmt.Println(filter.SelectMarshal("justName", tags))
+	fmt.Println(filter.SelectMarshal("justName", tags).MustJSON())
 	//--->output： [{"name":"c"},{"name":"c++"},{"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("all", tags))
+	fmt.Println(filter.SelectMarshal("all", tags).MustJSON())
 	//--->output： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("chat", tags))
+	fmt.Println(filter.SelectMarshal("chat", tags).MustJSON())
 	//--->output： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
 
 }
@@ -321,7 +321,7 @@ func main() {
 		},
 	}
 
-	articleJson := filter.SelectMarshal("article", article)
+	articleJson := filter.SelectMarshal("article", article).MustJSON()
 	fmt.Println(articleJson)
   //output--->  {"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}
 }
@@ -434,7 +434,7 @@ func main() {
   
  // If I only want to add some user information related to the programming language
   lang := filter.SelectMarshal("lang", user)
-	fmt.Println(lang)
+	fmt.Println(lang.MustJSON())
 	//{"langAge":[{"name":"c"},{"name":"c++"},{"name":"Go"}],"uid":1}
   
   //format
@@ -455,7 +455,7 @@ func main() {
   
   //If I just want to get some field information of uid and all arts under langage, you can do this
  lookup := filter.SelectMarshal("lookup", user)
-	fmt.Println(lookup)
+	fmt.Println(lookup.MustJSON())
 	//{"langAge":[{"arts":[{"profile":{"c":"clang"},"values":["1","2"]}]},{"arts":[{"profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"arts":[{"profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}],"uid":1}
   
   
@@ -626,7 +626,7 @@ func UserRes(c *gin.Context) {
 
 ### 简体中文
 
-golang的json字段过滤器，随意选择字段，随意输出指定结构体的字段，复用结构体。
+golang的json字段过滤器，随意选择字段，随意输出指定结构体的字段，复用结构体，**全面支持泛型**，对于go 1.18和1.17及其以下版本完美兼容。
 
 视频教程快速入门：https://www.bilibili.com/video/BV1ba411b7m1/
 
@@ -901,13 +901,13 @@ func main() {
 		},
 	}
 
-	fmt.Println(filter.SelectMarshal("justName", tags))
+	fmt.Println(filter.SelectMarshal("justName", tags).MustJSON())
 	//--->输出结果： [{"name":"c"},{"name":"c++"},{"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("all", tags))
+	fmt.Println(filter.SelectMarshal("all", tags).MustJSON())
 	//--->输出结果： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("chat", tags))
+	fmt.Println(filter.SelectMarshal("chat", tags).MustJSON())
 	//--->输出结果： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
 
 }
@@ -948,7 +948,7 @@ func main() {
 		},
 	}
 
-	articleJson := filter.SelectMarshal("article", article)
+	articleJson := filter.SelectMarshal("article", article).MustJSON()
 	fmt.Println(articleJson)
   //输出结果--->  {"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}
 }
@@ -1062,7 +1062,7 @@ func main() {
   
  // 如果我只想要编程语言相关加上部分用户信息的话
   lang := filter.SelectMarshal("lang", user)
-	fmt.Println(lang)
+	fmt.Println(lang.MustJSON())
 	//{"langAge":[{"name":"c"},{"name":"c++"},{"name":"Go"}],"uid":1}
   
   //格式化后
@@ -1083,7 +1083,7 @@ func main() {
   
   //如果我只是想获取uid加上langAge下所有Art的部分字段信息， 你可以这样
  lookup := filter.SelectMarshal("lookup", user)
-	fmt.Println(lookup)
+	fmt.Println(lookup.MustJSON())
 	//{"langAge":[{"arts":[{"profile":{"c":"clang"},"values":["1","2"]}]},{"arts":[{"profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"arts":[{"profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}],"uid":1}
   
   

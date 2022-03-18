@@ -38,18 +38,24 @@ TakePointerValue: //取指针的值
 			t.Val = struct{}{}
 			return
 		}
+		var isAnonymous bool
 		for i := 0; i < typeOf.NumField(); i++ {
 			jsonTag, ok := typeOf.Field(i).Tag.Lookup("json")
-			if !ok || jsonTag == "-" {
-				continue
-			}
-			tag := newOmitTag(jsonTag, omitScene, typeOf.Field(i).Name)
-			if tag.IsOmitField || !tag.IsSelect {
-				continue
+			var tag Tag
+			if !ok {
+				tag = newOmitNotTag(omitScene, typeOf.Field(i).Name)
+				isAnonymous = typeOf.Field(i).Anonymous
+			} else {
+				if jsonTag == "-" {
+					continue
+				}
+				tag = newOmitTag(jsonTag, omitScene, typeOf.Field(i).Name)
+				if tag.IsOmitField || !tag.IsSelect {
+					continue
+				}
+				isAnonymous = typeOf.Field(i).Anonymous && tag.IsAnonymous ////什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
 			}
 
-			//是否是匿名结构体
-			isAnonymous := typeOf.Field(i).Anonymous && tag.IsAnonymous //什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
 			//type Book struct {
 			//	BookName string `json:"bookName,select(resp)"`
 			//	*Page    `json:"page,select(resp)"` // 这个不算匿名字段，为什么？因为tag里打了字段名表示要当作一个字段来对待，
