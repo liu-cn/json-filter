@@ -2,29 +2,16 @@ package filter
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type fieldNodeTree struct {
-	Key string
-	//字段名
-
-	Val interface{}
-	//字段值，基础数据类型，int string，bool 等类型直接存在这里面，如果是struct,切片数组map 类型则字段所有k v会存在Child里
-
-	IsSlice bool //是否是切片，或者数组，
-
-	//是否是匿名结构体，内嵌结构体，需要把所有字段展开
-	IsAnonymous bool
-
-	//该字段值是否为nil
-	IsNil bool
-
-	//父节点指针，可以为nil，
-	ParentNode *fieldNodeTree
-
-	//如果是struct则保存所有字段名和值的指针，如果是切片就保存切片的所有值
-	Child []*fieldNodeTree
+	Key         string           //字段名
+	Val         interface{}      //字段值，基础数据类型，int string，bool 等类型直接存在这里面，如果是struct,切片数组map 类型则字段所有k v会存在ChildNodes里
+	IsSlice     bool             //是否是切片，或者数组，
+	IsAnonymous bool             //是否是匿名结构体，内嵌结构体，需要把所有字段展开
+	IsNil       bool             //该字段值是否为nil
+	ParentNode  *fieldNodeTree   //父节点指针，跟节点为nil，
+	ChildNodes  []*fieldNodeTree //如果是struct则保存所有字段名和值的指针，如果是切片就保存切片的所有值
 }
 
 func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
@@ -35,13 +22,13 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 	if t.IsNil {
 		return nil, true
 	}
-	if t.Child == nil {
+	if t.ChildNodes == nil {
 		return t.Val, true
 	}
 	if t.IsSlice { //为切片和数组时候key为空
-		slices := make([]interface{}, 0, len(t.Child))
-		for i := 0; i < len(t.Child); i++ {
-			value, ok0 := t.Child[i].GetValue()
+		slices := make([]interface{}, 0, len(t.ChildNodes))
+		for i := 0; i < len(t.ChildNodes); i++ {
+			value, ok0 := t.ChildNodes[i].GetValue()
 			if ok0 {
 				slices = append(slices, value)
 			}
@@ -49,7 +36,7 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 		return slices, true
 	}
 	maps := make(map[string]interface{})
-	for _, v := range t.Child {
+	for _, v := range t.ChildNodes {
 		value, ok1 := (*v).GetValue()
 		if ok1 {
 			maps[(*v).Key] = value
@@ -60,7 +47,7 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 
 func (t *fieldNodeTree) Map() map[string]interface{} {
 	maps := make(map[string]interface{})
-	for _, v := range t.Child {
+	for _, v := range t.ChildNodes {
 		value, ok := (*v).GetValue()
 		if ok {
 			maps[(*v).Key] = value
@@ -69,9 +56,9 @@ func (t *fieldNodeTree) Map() map[string]interface{} {
 	return maps
 }
 func (t *fieldNodeTree) Slice() interface{} {
-	slices := make([]interface{}, 0, len(t.Child))
-	for i := 0; i < len(t.Child); i++ {
-		v, ok := t.Child[i].GetValue()
+	slices := make([]interface{}, 0, len(t.ChildNodes))
+	for i := 0; i < len(t.ChildNodes); i++ {
+		v, ok := t.ChildNodes[i].GetValue()
 		if ok {
 			slices = append(slices, v)
 		}
@@ -88,7 +75,7 @@ func (t *fieldNodeTree) Marshal() interface{} {
 }
 
 func (t *fieldNodeTree) AddChild(tree *fieldNodeTree) *fieldNodeTree {
-	t.Child = append(t.Child, tree)
+	t.ChildNodes = append(t.ChildNodes, tree)
 	return t
 }
 
@@ -111,7 +98,7 @@ func (t *fieldNodeTree) AddChild(tree *fieldNodeTree) *fieldNodeTree {
 // GetParentNodeInsertPosition 递归找到最上层可以插入的节点
 func (t *fieldNodeTree) GetParentNodeInsertPosition() *fieldNodeTree {
 	if t.ParentNode == nil {
-		panic(fmt.Sprintf("父节点为nil %+v", t))
+		return t
 	}
 
 	//层层向父节点递归，直到寻找到不是匿名字段的节点，向该节点的child中添加数据
