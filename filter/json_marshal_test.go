@@ -27,6 +27,6 @@ func TestJsonMarshal(t *testing.T) {
 	}
 	fmt.Println(string(marshal))
 	fmt.Println(f)
-	f.MastMarshalJSON()
+	//{"lang":"Go","name":"boyan"}
 	//{"lang":"Go","name":"boyan"}
 }
