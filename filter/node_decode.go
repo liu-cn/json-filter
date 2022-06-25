@@ -10,7 +10,7 @@ type fieldNodeTree struct {
 	IsSlice     bool             //是否是切片，或者数组，
 	IsAnonymous bool             //是否是匿名结构体，内嵌结构体，需要把所有字段展开
 	IsNil       bool             //该字段值是否为nil
-	ParentNode  *fieldNodeTree   //父节点指针，跟节点为nil，
+	ParentNode  *fieldNodeTree   //父节点指针，根节点为nil，
 	ChildNodes  []*fieldNodeTree //如果是struct则保存所有字段名和值的指针，如果是切片就保存切片的所有值
 }
 
