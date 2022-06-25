@@ -37,9 +37,9 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 	}
 	maps := make(map[string]interface{})
 	for _, v := range t.ChildNodes {
-		value, ok1 := (*v).GetValue()
+		value, ok1 := v.GetValue()
 		if ok1 {
-			maps[(*v).Key] = value
+			maps[v.Key] = value
 		}
 	}
 	return maps, true
@@ -75,6 +75,9 @@ func (t *fieldNodeTree) Marshal() interface{} {
 }
 
 func (t *fieldNodeTree) AddChild(tree *fieldNodeTree) *fieldNodeTree {
+	if t.ChildNodes == nil {
+		t.ChildNodes = make([]*fieldNodeTree, 0, 3)
+	}
 	t.ChildNodes = append(t.ChildNodes, tree)
 	return t
 }
