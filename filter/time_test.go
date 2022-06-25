@@ -32,4 +32,5 @@ func TestTime(t *testing.T) {
 	//
 	//fmt.Println(string(marshal))
 	fmt.Println(SelectMarshal("list", user).MustJSON())
+	//{"birth_time":"2022-06-25 12:06:16","birth_time2":"2022-06-25 12:06:16","id":111,"nil_birth_time":"0001-01-01 00:00:00","timer":"2022-06-25T12:06:16.959709+08:00","title":""}
 }
