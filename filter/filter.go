@@ -7,7 +7,12 @@ type Filter struct {
 func (f Filter) MarshalJSON() ([]byte, error) {
 	return f.node.Bytes()
 }
+
+//Deprecated
 func (f Filter) MastMarshalJSON() []byte {
+	return f.node.MustBytes()
+}
+func (f Filter) MustMarshalJSON() []byte {
 	return f.node.MustBytes()
 }
 
@@ -24,6 +29,15 @@ func (f Filter) MustJSON() string {
 // JSON 获取解析过滤后的json字符串，如果中途有错误会返回错误
 func (f Filter) JSON() (string, error) {
 	return f.node.JSON()
+}
+
+// String fmt.Println() 打印时输出json字符串
+func (f Filter) String() string {
+	json, err := f.JSON()
+	if err != nil {
+		return "[Filter Err]"
+	}
+	return json
 }
 
 // SelectMarshal 第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。

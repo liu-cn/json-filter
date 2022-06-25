@@ -26,5 +26,7 @@ func TestJsonMarshal(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(string(marshal))
+	fmt.Println(f)
+	f.MastMarshalJSON()
 	//{"lang":"Go","name":"boyan"}
 }
