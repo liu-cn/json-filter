@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -124,8 +125,8 @@ type Child struct {
 	CAge  int    `json:"c_age,select(all|struct)"`
 }
 type UsersCase struct {
-	Name   string `json:"name,select(all|1)"`
-	Age    int    `json:"age,select(all|2)"`
+	Name   string `json:"name,select(all|1),omit(1)"`
+	Age    int    `json:"age,select(all|2),omit(1)"`
 	Struct Child  `json:"struct,select(all|struct)"`
 }
 
@@ -388,6 +389,24 @@ func TestTestCases(t *testing.T) {
 	t.Run("intAll", func(t *testing.T) {
 		filter := SelectMarshal("intAll", NewTestCases())
 		fmt.Println(filter.MustJSON())
+		//{"int":100,"int16":16,"int16_p":16,"int32":32,"int32_p":32,"int64":64,"int64_p":64,"int8":8,"int8_p":8,"int_p":100}
+	})
+	t.Run("intAllSelect", func(t *testing.T) {
+		filter := Select("intAll", NewTestCases())
+		marshal, err := json.Marshal(filter)
+		if err != nil {
+			t.Error("err", err)
+		}
+		fmt.Println(string(marshal))
+		//{"int":100,"int16":16,"int16_p":16,"int32":32,"int32_p":32,"int64":64,"int64_p":64,"int8":8,"int8_p":8,"int_p":100}
+	})
+	t.Run("intAllOmit", func(t *testing.T) {
+		filter := Omit("1", UsersCase{})
+		marshal, err := json.Marshal(filter)
+		if err != nil {
+			t.Error("err", err)
+		}
+		fmt.Println(string(marshal))
 		//{"int":100,"int16":16,"int16_p":16,"int32":32,"int32_p":32,"int64":64,"int64_p":64,"int8":8,"int8_p":8,"int_p":100}
 	})
 

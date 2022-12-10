@@ -41,7 +41,7 @@ TakePointerValue: //取指针的值
 		var isAnonymous bool
 		for i := 0; i < typeOf.NumField(); i++ {
 			jsonTag, ok := typeOf.Field(i).Tag.Lookup("json")
-			var tag Tag
+			var tag tag
 			if !ok {
 				tag = newOmitNotTag(omitScene, typeOf.Field(i).Name)
 				isAnonymous = typeOf.Field(i).Anonymous
@@ -98,7 +98,7 @@ TakePointerValue: //取指针的值
 				t.AddChild(tree)
 			}
 		}
-		if t.ChildNodes == nil && !t.IsAnonymous {
+		if t.Children == nil && !t.IsAnonymous {
 			//t.Val = struct{}{} //这样表示返回{}
 
 			t.IsAnonymous = true //给他搞成匿名字段的处理方式，直接忽略字段

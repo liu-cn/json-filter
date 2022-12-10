@@ -98,7 +98,7 @@ TakePointerValue: //取指针的值
 				t.AddChild(tree)
 			}
 		}
-		if t.ChildNodes == nil && !t.IsAnonymous {
+		if t.Children == nil && !t.IsAnonymous {
 			//t.Val = struct{}{} //这样表示返回{}
 
 			t.IsAnonymous = true //给他搞成匿名字段的处理方式，直接忽略字段
