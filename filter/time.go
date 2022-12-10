@@ -7,7 +7,7 @@ import (
 
 type Time time.Time
 
-const timeFmt = "2006-01-02 15:04:05"
+var timeFmt = "2006-01-02 15:04:05"
 
 func (t Time) MarshalJSON() ([]byte, error) {
 	fmtTime := time.Time(t)

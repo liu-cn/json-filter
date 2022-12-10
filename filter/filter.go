@@ -8,7 +8,7 @@ func (f Filter) MarshalJSON() ([]byte, error) {
 	return f.node.Bytes()
 }
 
-//Deprecated
+// Deprecated
 func (f Filter) MastMarshalJSON() []byte {
 	return f.node.MustBytes()
 }
@@ -50,6 +50,16 @@ func SelectMarshal(selectScene string, el interface{}) Filter {
 	return Filter{
 		node: tree,
 	}
+}
+
+// Select 直接返回过滤后的数据结构，相当于直接SelectMarshal后再调用Interface方法
+func Select(selectScene string, el interface{}) interface{} {
+	return SelectMarshal(selectScene, el).Interface()
+}
+
+// Omit 直接返回过滤后的数据结构，相当于直接OmitMarshal后再调用Interface方法
+func Omit(omitScene string, el interface{}) interface{} {
+	return OmitMarshal(omitScene, el).Interface()
 }
 
 // OmitMarshal 第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉

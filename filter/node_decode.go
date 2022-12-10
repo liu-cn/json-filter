@@ -11,7 +11,7 @@ type fieldNodeTree struct {
 	IsAnonymous bool             //是否是匿名结构体，内嵌结构体，需要把所有字段展开
 	IsNil       bool             //该字段值是否为nil
 	ParentNode  *fieldNodeTree   //父节点指针，根节点为nil，
-	ChildNodes  []*fieldNodeTree //如果是struct则保存所有字段名和值的指针，如果是切片就保存切片的所有值
+	Children    []*fieldNodeTree //如果是struct则保存所有字段名和值的指针，如果是切片就保存切片的所有值
 }
 
 func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
@@ -22,13 +22,13 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 	if t.IsNil {
 		return nil, true
 	}
-	if t.ChildNodes == nil {
+	if t.Children == nil {
 		return t.Val, true
 	}
 	if t.IsSlice { //为切片和数组时候key为空
-		slices := make([]interface{}, 0, len(t.ChildNodes))
-		for i := 0; i < len(t.ChildNodes); i++ {
-			value, ok0 := t.ChildNodes[i].GetValue()
+		slices := make([]interface{}, 0, len(t.Children))
+		for i := 0; i < len(t.Children); i++ {
+			value, ok0 := t.Children[i].GetValue()
 			if ok0 {
 				slices = append(slices, value)
 			}
@@ -36,7 +36,7 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 		return slices, true
 	}
 	maps := make(map[string]interface{})
-	for _, v := range t.ChildNodes {
+	for _, v := range t.Children {
 		value, ok1 := v.GetValue()
 		if ok1 {
 			maps[v.Key] = value
@@ -47,18 +47,18 @@ func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {
 
 func (t *fieldNodeTree) Map() map[string]interface{} {
 	maps := make(map[string]interface{})
-	for _, v := range t.ChildNodes {
-		value, ok := (*v).GetValue()
+	for _, v := range t.Children {
+		value, ok := v.GetValue()
 		if ok {
-			maps[(*v).Key] = value
+			maps[v.Key] = value
 		}
 	}
 	return maps
 }
 func (t *fieldNodeTree) Slice() interface{} {
-	slices := make([]interface{}, 0, len(t.ChildNodes))
-	for i := 0; i < len(t.ChildNodes); i++ {
-		v, ok := t.ChildNodes[i].GetValue()
+	slices := make([]interface{}, 0, len(t.Children))
+	for i := 0; i < len(t.Children); i++ {
+		v, ok := t.Children[i].GetValue()
 		if ok {
 			slices = append(slices, v)
 		}
@@ -75,10 +75,10 @@ func (t *fieldNodeTree) Marshal() interface{} {
 }
 
 func (t *fieldNodeTree) AddChild(tree *fieldNodeTree) *fieldNodeTree {
-	if t.ChildNodes == nil {
-		t.ChildNodes = make([]*fieldNodeTree, 0, 3)
+	if t.Children == nil {
+		t.Children = make([]*fieldNodeTree, 0, 3)
 	}
-	t.ChildNodes = append(t.ChildNodes, tree)
+	t.Children = append(t.Children, tree)
 	return t
 }
 
