@@ -9,7 +9,7 @@ const (
 	//empty ="$empty"
 )
 
-type Tag struct {
+type tag struct {
 	//执行的场景
 	SelectScene string
 	//该字段是否需要被忽略？
@@ -24,13 +24,13 @@ type Tag struct {
 	Omitempty bool
 }
 
-func newSelectTag(tag, selectScene, fieldName string) Tag {
+func newSelectTag(tagStr, selectScene, fieldName string) tag {
 
-	tagEl := Tag{
+	tagEl := tag{
 		SelectScene: selectScene,
 		IsOmitField: true,
 	}
-	tags := strings.Split(tag, ",")
+	tags := strings.Split(tagStr, ",")
 	tagEl.UseFieldName = fieldName
 
 	if len(tags) < 2 {
@@ -63,13 +63,13 @@ func newSelectTag(tag, selectScene, fieldName string) Tag {
 	return tagEl
 }
 
-func newOmitTag(tag, omitScene, fieldName string) Tag {
-	tagEl := Tag{
+func newOmitTag(tagStr, omitScene, fieldName string) tag {
+	tagEl := tag{
 		SelectScene: omitScene,
 		IsOmitField: false,
 		IsSelect:    true,
 	}
-	tags := strings.Split(tag, ",")
+	tags := strings.Split(tagStr, ",")
 	tagEl.UseFieldName = fieldName
 
 	if len(tags) < 2 {
@@ -107,8 +107,8 @@ func newOmitTag(tag, omitScene, fieldName string) Tag {
 	return tagEl
 }
 
-func newOmitNotTag(omitScene, fieldName string) Tag {
-	return Tag{
+func newOmitNotTag(omitScene, fieldName string) tag {
+	return tag{
 		IsSelect:     true,
 		UseFieldName: fieldName,
 		SelectScene:  omitScene,
