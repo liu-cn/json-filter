@@ -124,8 +124,10 @@ TakePointerValue: //取指针的值
 		}
 
 	case reflect.Map:
+	takeVMap:
 		if valueOf.Kind() == reflect.Ptr {
 			valueOf = valueOf.Elem()
+			goto takeVMap
 		}
 		keys := valueOf.MapKeys()
 		if len(keys) == 0 { //空map情况下解析为{}
@@ -134,14 +136,14 @@ TakePointerValue: //取指针的值
 		}
 		for i := 0; i < len(keys); i++ {
 			mapIsNil := false
-		takeValMap:
 			val := valueOf.MapIndex(keys[i])
+		takeValMap:
 			if val.Kind() == reflect.Ptr {
 				if val.IsNil() {
 					mapIsNil = true
 					continue
 				} else {
-					val = valueOf.MapIndex(keys[i]).Elem()
+					val = val.Elem()
 					goto takeValMap
 				}
 			}

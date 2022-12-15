@@ -718,7 +718,14 @@ func main() {
 	fmt.Println(string(marshal)) //以下是官方的json解析输出结果：可以看到所有的字段都被解析了出来
 	//{"uid":1,"nickname":"boyan","avatar":"avatar","sex":1,"vip_end_time":"2023-03-06T23:11:22.622693+08:00","price":"999.9"}
 
-  //用法：filter.SelectMarshal("select里的一个场景",这里可以是slice/array/struct/pointer/map)
+	//用法：filter.Select("select里的一个场景",这里可以是slice/array/struct/pointer/map)
+	article:=filter.Select("article", user)
+	articleBytes, _ := json.Marshal(article)
+	fmt.Println(string(articleBytes)) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
+	//{"avatar":"avatar","nickname":"boyan","uid":1}
+	
+  //filter.SelectMarshal 是一个方便测试查看的方法，先过滤，然后再编码成json字符串返回，有错误直接panic，三部操作一气呵成，适合测试查看等
+  //下面为了方便演示，将使用SelectMarshal api来进行
 	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 
@@ -767,7 +774,8 @@ omit则反之，标记的字段会被排除。
 这时候你需要调用
 
 ```go
-f:=filter.OmitMarshal("chat",el) //这时Nickname字段就被排除掉了。
+f:=filter.Omit("chat",el) //这时Nickname字段就被排除掉了。
+f:=filter.OmitMarshal("chat",el) //同样是是一气呵成的操作，将结构体编码后返回一个对象，可以选择对象的任意形态
 ```
 
 ##### omitempty零值忽略
