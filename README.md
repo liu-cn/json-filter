@@ -724,7 +724,7 @@ func main() {
 	fmt.Println(string(articleBytes)) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 	
-  //filter.SelectMarshal 是一个方便测试查看的方法，先过滤，然后再编码成json字符串返回，有错误直接panic，三部操作一气呵成，适合测试查看等
+  //filter.SelectMarshal.MustJSON() 是一个方便测试查看的方法，先过滤，然后再编码成json字符串返回，有错误直接panic，三部操作一气呵成，适合测试查看等
   //下面为了方便演示，将使用SelectMarshal api来进行
 	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
@@ -1159,12 +1159,12 @@ type User struct {
 
 func (u User) ArticleResp() interface{} {
 	//这样当你后面想要优化性能时可以在这里进行优化，
-	return filter.SelectMarshal("article",u).Interface()
+	return filter.Select("article",u)
 }
 
 func (u User) ProfileResp() interface{} {
 	//这样当你后面想要优化性能时可以在这里进行优化，
-	return filter.SelectMarshal("profile",u).Interface()
+	return filter.Select("profile",u)
 }
 
 func (u User) ChatResp() interface{} {
@@ -1194,7 +1194,7 @@ type User struct {
 }
 
 func (u User) FilterProfile() interface{} {
-	return filter.SelectMarshal("profile", u).Interface()
+	return filter.Select("profile", u)
 }
 
 func main() {
@@ -1253,7 +1253,7 @@ func UserRes(c *gin.Context) {
 		Avatar: "avatar",
 	}
   
-	OkWithData(filter.SelectMarshal("profile", user).Interface(), c)
+	OkWithData(filter.Select("profile", user), c)
 }
 ```
 
