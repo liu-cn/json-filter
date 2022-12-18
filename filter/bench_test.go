@@ -50,13 +50,26 @@ var str string
 func BenchmarkUserPointer(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		str = SelectMarshal("article", &user).MustJSON()
+		_ = SelectMarshal("article", &user)
+	}
+}
+
+func BenchmarkUserPointerWithCache(b *testing.B) {
+	user := newUsers()
+	for i := 0; i < b.N; i++ {
+		_ = SelectWithCache("article", &user)
 	}
 }
 
 func BenchmarkUserVal(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		str = SelectMarshal("article", user).MustJSON()
+		_ = SelectMarshal("article", user)
+	}
+}
+func BenchmarkUserValWithCache(b *testing.B) {
+	user := newUsers()
+	for i := 0; i < b.N; i++ {
+		_ = SelectWithCache("article", user)
 	}
 }
