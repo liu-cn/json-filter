@@ -9,8 +9,8 @@ type Time time.Time
 
 var timeFmt = "2006-01-02 15:04:05"
 
-func (t Time) MarshalJSON() ([]byte, error) {
-	fmtTime := time.Time(t)
+func (t *Time) MarshalJSON() ([]byte, error) {
+	fmtTime := time.Time(*t)
 	formatted := fmt.Sprintf("\"%s\"", fmtTime.Format(timeFmt))
 	return []byte(formatted), nil
 }
@@ -26,6 +26,6 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-func (t Time) String() string {
-	return time.Time(t).Format(timeFmt)
+func (t *Time) String() string {
+	return time.Time(*t).Format(timeFmt)
 }
