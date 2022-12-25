@@ -57,7 +57,7 @@ func BenchmarkUserPointer(b *testing.B) {
 func BenchmarkUserPointerWithCache(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		_ = SelectWithCache("article", &user)
+		_ = Select("article", &user)
 	}
 }
 
@@ -70,6 +70,6 @@ func BenchmarkUserVal(b *testing.B) {
 func BenchmarkUserValWithCache(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		_ = SelectWithCache("article", user)
+		_ = Select("article", user)
 	}
 }
