@@ -7,7 +7,7 @@
 
 ## English
 
-Golang's JSON field filter can select fields at will, output fields of specified structures at will, and reuse structures.  **It fully supports generics** and is perfectly compatible with go 1.18 and 1.17 and below
+Golang's JSON field filter can select fields at will, output fields of specified structures at will, and reuse structures.  **It fully supports generics** and is Compatible with all versions of go,The official json can support and be compatible with all json-filter
 
 list：
 
@@ -626,7 +626,7 @@ func UserRes(c *gin.Context) {
 
 ### 简体中文
 
-golang的json字段过滤器，随意选择字段，随意输出指定结构体的字段，复用结构体，**全面支持泛型**，对于go 1.18和1.17及其以下版本完美兼容。
+golang的json字段过滤器，随意选择字段，随意输出指定结构体的字段，复用结构体，**全面支持泛型**，**对于go所有版本均完美兼容**，官方json库能做的json-filter全部兼容和支持。
 
 视频教程快速入门：https://www.bilibili.com/video/BV1ba411b7m1/
 
