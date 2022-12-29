@@ -42,7 +42,7 @@ func (f Filter) String() string {
 	return json
 }
 
-// SelectMarshal 第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。
+// SelectMarshal 不建议使用，第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。
 func SelectMarshal(selectScene string, el interface{}) Filter {
 	if enableCache {
 		return selectWithCache(selectScene, el)
@@ -63,9 +63,9 @@ func selectMarshal(selectScene string, el interface{}) Filter {
 // Select 直接返回过滤后的数据结构，相当于直接SelectMarshal后再调用Interface方法
 func Select(selectScene string, el interface{}) interface{} {
 	if enableCache {
-		return selectWithCache(selectScene, el).Interface()
+		return selectWithCache(selectScene, el)
 	}
-	return selectMarshal(selectScene, el).Interface()
+	return selectMarshal(selectScene, el)
 }
 
 // selectWithCache 直接返回过滤后的数据结构，相当于直接SelectMarshal后再调用Interface方法
@@ -83,12 +83,12 @@ func selectWithCache(selectScene string, el interface{}) Filter {
 // Omit 直接返回过滤后的数据结构，相当于直接OmitMarshal后再调用Interface方法
 func Omit(omitScene string, el interface{}) interface{} {
 	if enableCache {
-		return omitWithCache(omitScene, el).Interface()
+		return omitWithCache(omitScene, el)
 	}
-	return omitMarshal(omitScene, el).Interface()
+	return omitMarshal(omitScene, el)
 }
 
-// OmitMarshal 第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
+// OmitMarshal 不建议使用，第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
 func OmitMarshal(omitScene string, el interface{}) Filter {
 	if enableCache {
 		return omitWithCache(omitScene, el)

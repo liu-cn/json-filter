@@ -29,6 +29,6 @@ func NewOmitUser() OmitUser {
 }
 
 func TestOmitUser(t *testing.T) {
-	fmt.Println(filter.OmitMarshal("lang", NewOmitUser()).MustJSON())
+	fmt.Println(filter.Omit("lang", NewOmitUser()))
 	//{"LangAge":{"Name":"go"},"Name":"boyan"}
 }

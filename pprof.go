@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var j string
+var j interface{}
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
@@ -28,7 +28,7 @@ func main() {
 	}()
 
 	for {
-		j = filter.SelectMarshal("article", newUser()).MustJSON()
+		j = filter.Select("article", newUser())
 	}
 }
 
