@@ -31,12 +31,12 @@ func TestSlice(t *testing.T) {
 		},
 	}
 
-	fmt.Println(filter.SelectMarshal("justName", tags).MustJSON())
+	fmt.Println(filter.Select("justName", tags))
 	//--->输出结果： [{"name":"c"},{"name":"c++"},{"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("all", tags).MustJSON())
+	fmt.Println(filter.Select("all", tags))
 	//--->输出结果： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("chat", tags).MustJSON())
+	fmt.Println(filter.Select("chat", tags))
 	//--->输出结果： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
 }

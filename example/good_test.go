@@ -10,12 +10,12 @@ type UserModel struct {
 
 func (u UserModel) ArticleResp() interface{} {
 	//这样当你后面想要优化性能时可以在这里进行优化，
-	return filter.SelectMarshal("article", u).Interface()
+	return filter.Select("article", u)
 }
 
 func (u UserModel) ProfileResp() interface{} {
 	//这样当你后面想要优化性能时可以在这里进行优化，
-	return filter.SelectMarshal("profile", u).Interface()
+	return filter.Select("profile", u)
 }
 
 func (u UserModel) ChatResp() interface{} {

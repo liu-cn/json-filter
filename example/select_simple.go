@@ -41,10 +41,10 @@ func main() {
 	fmt.Println(string(marshal)) //以下是官方的json解析输出结果：可以看到所有的字段都被解析了出来
 	//{"uid":1,"nickname":"boyan","avatar":"avatar","sex":1,"vip_end_time":"2023-03-06T23:11:22.622693+08:00","price":"999.9"}
 
-	//用法：filter.SelectMarshal("select里的一个场景",这里可以是slice/array/struct/pointer/map)
-	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
+	//用法：filter.Select("select里的一个场景",这里可以是slice/array/struct/pointer/map)
+	fmt.Println(filter.Select("article", user)) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 
-	fmt.Println(filter.SelectMarshal("profile", user).MustJSON()) //profile接口下
+	fmt.Println(filter.Select("profile", user)) //profile接口下
 	//{"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-06T23:31:28.636529+08:00"}
 }

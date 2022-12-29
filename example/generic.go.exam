@@ -51,10 +51,10 @@ func NewUser() User[Lang, string, int] {
 }
 
 func TestJson(t *testing.T) {
-	fmt.Println(filter.SelectMarshal("article", NewUser()).MustJSON())
+	fmt.Println(filter.Select("article", NewUser()))
 	//{"data":{"is_static":true,"name":"go"},"data1":{"is_static":true,"name":"c++"},"k":"key","k_p":"key","nickname":"boyan","v":10,"vp":10}
 
 
-	fmt.Println(filter.SelectMarshal("chat", NewUser()).MustJSON())
+	fmt.Println(filter.Select("chat", NewUser()))
 	//{"nickname":"boyan"}
 }

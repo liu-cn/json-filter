@@ -28,8 +28,8 @@ func TestAnonymous(t *testing.T) {
 		},
 	}
 
-	articleJson := filter.SelectMarshal("article", article)
-	fmt.Println(articleJson.MustJSON())
+	articleJson := filter.Select("article", article)
+	fmt.Println(articleJson)
 	//输出结果--->  {"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}
 
 }

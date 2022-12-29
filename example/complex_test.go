@@ -80,12 +80,12 @@ func NewUser() Users {
 
 func TestComplex(t *testing.T) {
 	user := NewUser()
-	lang := filter.SelectMarshal("lang", user)
-	fmt.Println(lang.MustJSON())
+	lang := filter.Select("lang", user)
+	fmt.Println(lang)
 	//{"langAge":[{"name":"c"},{"name":"c++"},{"name":"Go"}],"uid":1}
 
-	lookup := filter.SelectMarshal("lookup", user)
-	fmt.Println(lookup.MustJSON())
+	lookup := filter.Select("lookup", user)
+	fmt.Println(lookup)
 	//{"langAge":[{"arts":[{"profile":{"c":"clang"},"values":["1","2"]}]},{"arts":[{"profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"arts":[{"profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}],"uid":1}
 
 }
