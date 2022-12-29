@@ -2,7 +2,7 @@ package filter
 
 var tagCache cache
 
-var enableCache = true
+var enableCache = false
 
 func init() {
 	tagCache.c = make(map[string]tag)
