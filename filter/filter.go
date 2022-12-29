@@ -121,5 +121,5 @@ func omitWithCache(omitScene string, el interface{}) Filter {
 
 // EnableCache 决定是否启用缓存，默认开启（强烈建议，除非万一缓存模式下出现bug，可以关闭缓存退回曾经的无缓存过滤模式），开启缓存后会有30%-40%的性能提升，开启缓存并没有副作用，只是会让结构体的字段tag常驻内存减少tag字符串处理操作
 func EnableCache(enable bool) {
-	enableCache = enable
+	enableCache = false
 }
