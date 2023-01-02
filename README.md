@@ -101,11 +101,11 @@ func main() {
 	//{"uid":1,"nickname":"boyan","avatar":"avatar","sex":1,"vip_end_time":"2023-03-06T23:11:22.622693+08:00","price":"999.9"}
 
   
-  //usage：filter.SelectMarshal("select case",This can be：slice/array/struct/pointer/map)
-	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //The following is the JSON filtered by JSON filter. This output is the JSON under the article interface
+  //usage：filter.Select("select case",This can be：slice/array/struct/pointer/map)
+	fmt.Println(filter.Select("article", user)) //The following is the JSON filtered by JSON filter. This output is the JSON under the article interface
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 
-	fmt.Println(filter.SelectMarshal("profile", user).MustJSON()) //profile result
+	fmt.Println(filter.Select("profile", user)) //profile result
 	//{"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-06T23:31:28.636529+08:00"}
 }
 
@@ -146,7 +146,7 @@ At this time, you need to add omit (excluded scene | scene 0 | Scene 1 | scene n
 At this time, you need to call
 
 ```go
-f:=filter.OmitMarshal("chat",el) //The nickname field is then excluded.
+f:=filter.Omit("chat",el) //The nickname field is then excluded.
 ```
 
 ##### Omitempty zero value ignored
@@ -174,9 +174,9 @@ type User struct {
 }
 
 //In this way, no matter any case
-SelectMarshal("Whatever case you choose here", user)//No matter what kind of case, the field of uid will be output.
+Select("Whatever case you choose here", user)//No matter what kind of case, the field of uid will be output.
 
-OmitMarshal("Whatever case you choose here",user)//The password field is excluded in any scenario.
+Omit("Whatever case you choose here",user)//The password field is excluded in any scenario.
 
 
 ```
@@ -185,32 +185,7 @@ OmitMarshal("Whatever case you choose here",user)//The password field is exclude
 
 #### Method of filtering filter structure
 
-##### Filter.Interface
-
-Filtered JSON data structure, (which can be encoded by JSON)
-
-```go
-usage method
-
-f:=filter.SelectMarshal("case",el) //el：array/slice/struct/map
-
-A filtered filter structure will be returned. You can call the specified method to obtain the specified data as needed.
-
-f.Interface()---->Return a data structure that has not been parsed. At this time, you can directly use the official JSON Marshal () to serialize into filtered JSON strings.
-ps：
-  f:=filter.SelectMarshal("场景",el) 
-  json.Marshal(f.Interface()) //Equivalent to json.Marshal(filter.SelectMarshal("case",el).Interface()) 
-```
-
-
-
-##### Filter.MustJSON
-
-Directly encoded JSON string after filtering
-The method of must prefix will not return err. If err is encountered in the process of use, it doesn't matter if it is used in the test. It must be used in the project to ensure that the structure is correct.
-
-```go
-fmt.Println(f.MustJSON()) //---> You don't need to go to JSON like that Marshall, because this is the returned JSON string directly
+fmt.Println(f) //---> You don't need to go to JSON like that Marshall, because this is the returned JSON string directly
 
 //If you want to use this method safely, use F. JSON () to return a JSON string and err
 	j, err := f.JSON()
@@ -239,7 +214,7 @@ m := map[string]interface{}{
 		},
 	}
 
-	fmt.Println(filter.SelectMarshal("article", m).MustJSON())
+	fmt.Println(filter.Select("article", m))
 //{"name":"哈哈","struct":{"avatar":"avatar","nickname":"boyan","uid":1}}
 //You can see that the map can also be filtered directly.
 
@@ -277,13 +252,13 @@ func main() {
 		},
 	}
 
-	fmt.Println(filter.SelectMarshal("justName", tags).MustJSON())
+	fmt.Println(filter.Select("justName", tags))
 	//--->output： [{"name":"c"},{"name":"c++"},{"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("all", tags).MustJSON())
+	fmt.Println(filter.Select("all", tags))
 	//--->output： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("chat", tags).MustJSON())
+	fmt.Println(filter.Select("chat", tags))
 	//--->output： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
 
 }
@@ -321,7 +296,7 @@ func main() {
 		},
 	}
 
-	articleJson := filter.SelectMarshal("article", article).MustJSON()
+	articleJson := filter.Select("article", article)
 	fmt.Println(articleJson)
   //output--->  {"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}
 }
@@ -433,8 +408,8 @@ func main() {
 
   
  // If I only want to add some user information related to the programming language
-  lang := filter.SelectMarshal("lang", user)
-	fmt.Println(lang.MustJSON())
+  lang := filter.Select("lang", user)
+	fmt.Println(lang)
 	//{"langAge":[{"name":"c"},{"name":"c++"},{"name":"Go"}],"uid":1}
   
   //format
@@ -454,8 +429,8 @@ func main() {
 	}
   
   //If I just want to get some field information of uid and all arts under langage, you can do this
- lookup := filter.SelectMarshal("lookup", user)
-	fmt.Println(lookup.MustJSON())
+ lookup := filter.Select("lookup", user)
+	fmt.Println(lookup)
 	//{"langAge":[{"arts":[{"profile":{"c":"clang"},"values":["1","2"]}]},{"arts":[{"profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"arts":[{"profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}],"uid":1}
   
   
@@ -522,12 +497,12 @@ type User struct {
 
 func (u User) ArticleResp() interface{} {
 	//In this way, when you want to optimize the performance later, you can optimize it here,
-	return filter.SelectMarshal("article",u).Interface()
+	return filter.Select("article",u)
 }
 
 func (u User) ProfileResp() interface{} {
 	//In this way, when you want to optimize the performance later, you can optimize it here,
-	return filter.SelectMarshal("profile",u).Interface()
+	return filter.Select("profile",u)
 }
 
 func (u User) ChatResp() interface{} {
@@ -557,7 +532,7 @@ type User struct {
 }
 
 func (u User) FilterProfile() interface{} {
-	return filter.SelectMarshal("profile", u).Interface()
+	return filter.Select("profile", u)
 }
 
 func main() {
@@ -616,7 +591,7 @@ func UserRes(c *gin.Context) {
 		Avatar: "avatar",
 	}
   
-	OkWithData(filter.SelectMarshal("profile", user).Interface(), c)
+	OkWithData(filter.Select("profile", user), c)
 }
 ```
 
@@ -724,12 +699,11 @@ func main() {
 	fmt.Println(string(articleBytes)) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 	
-  //filter.SelectMarshal.MustJSON() 是一个方便测试查看的方法，先过滤，然后再编码成json字符串返回，有错误直接panic，三部操作一气呵成，适合测试查看等
-  //下面为了方便演示，将使用SelectMarshal api来进行
-	fmt.Println(filter.SelectMarshal("article", user).MustJSON()) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
+  //filter.Select fmt打印的时候会自动打印过滤后的json字符串
+	fmt.Println(filter.Select("article", user)) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
 	//{"avatar":"avatar","nickname":"boyan","uid":1}
 
-	fmt.Println(filter.SelectMarshal("profile", user).MustJSON()) //profile接口下
+	fmt.Println(filter.Select("profile", user)) //profile接口下
 	//{"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-06T23:31:28.636529+08:00"}
 }
 
@@ -775,7 +749,6 @@ omit则反之，标记的字段会被排除。
 
 ```go
 f:=filter.Omit("chat",el) //这时Nickname字段就被排除掉了。
-f:=filter.OmitMarshal("chat",el) //同样是是一气呵成的操作，将结构体编码后返回一个对象，可以选择对象的任意形态
 ```
 
 ##### omitempty零值忽略
@@ -803,46 +776,14 @@ type User struct {
 }
 
 //这样无论是任何场景
-SelectMarshal("无论这里选择任何场景", user)//无论何种场景都会输出UID的字段。
+Select("无论这里选择任何场景", user)//无论何种场景都会输出UID的字段。
 
-OmitMarshal("无论这里选择任何场景",user)//无论何种场景都会排除password 字段。
-
-
-```
+Omit("无论这里选择任何场景",user)//无论何种场景都会排除password 字段。
 
 
+f:=filter.Select("场景",要过滤的结构体/map/切片/数组) 
 
-#### 过滤后的Filter结构体的方法
-
-##### Filter.Interface
-
-过滤后的json数据结构，（可以被json编码）
-
-```go
-使用方法
-
-f:=filter.SelectMarshal("场景",el) //el可以是 要过滤的 /结构体/map/切片/数组
-
-会返回一个过滤后的Filter结构体，可以根据需要调用指定的方法来获取指定数据。
-
-f.Interface()---->返回一个还没被解析的数据结构，此时可以直接使用官方的json.Marshal()来序列化成过滤后的json字符串。
-ps：
-  f:=filter.SelectMarshal("场景",el) 
-  json.Marshal(f.Interface()) //等同于json.Marshal(filter.SelectMarshal("场景",el).Interface()) 
-```
-
-
-
-##### Filter.MustJSON
-
-过滤后直接编码成的json字符串
-
-Must前缀的方法，不会返回err，如果使用过程中遇到err直接panic，测试使用无所谓，项目里使用一定要保证结构体正确无误。
-
-```go
-f:=filter.SelectMarshal("场景",要过滤的结构体/map/切片/数组) 
-
-fmt.Println(f.MustJSON()) //---> 就不需要上面那样去json.Marshal 了，因为这样直接就是返回的json字符串
+fmt.Println(f) //---> 就不需要上面那样去json.Marshal 了，因为这样直接就是返回的json字符串
 
 //如果想安全的使用这个方法请使用f.JSON() 会返回一个json字符串和err
 	j, err := f.JSON()
@@ -871,7 +812,7 @@ m := map[string]interface{}{
 		},
 	}
 
-	fmt.Println(filter.SelectMarshal("article", m).MustJSON())
+	fmt.Println(filter.Select("article", m))
 //{"name":"哈哈","struct":{"avatar":"avatar","nickname":"boyan","uid":1}}
 //可以看到map也是可以直接过滤的。
 
@@ -909,13 +850,13 @@ func main() {
 		},
 	}
 
-	fmt.Println(filter.SelectMarshal("justName", tags).MustJSON())
+	fmt.Println(filter.Select("justName", tags))
 	//--->输出结果： [{"name":"c"},{"name":"c++"},{"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("all", tags).MustJSON())
+	fmt.Println(filter.Select("all", tags))
 	//--->输出结果： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
 
-	fmt.Println(filter.SelectMarshal("chat", tags).MustJSON())
+	fmt.Println(filter.Select("chat", tags))
 	//--->输出结果： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
 
 }
@@ -956,7 +897,7 @@ func main() {
 		},
 	}
 
-	articleJson := filter.SelectMarshal("article", article).MustJSON()
+	articleJson := filter.Select("article", article)
 	fmt.Println(articleJson)
   //输出结果--->  {"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}
 }
@@ -1069,8 +1010,8 @@ func main() {
 
   
  // 如果我只想要编程语言相关加上部分用户信息的话
-  lang := filter.SelectMarshal("lang", user)
-	fmt.Println(lang.MustJSON())
+  lang := filter.Select("lang", user)
+	fmt.Println(lang)
 	//{"langAge":[{"name":"c"},{"name":"c++"},{"name":"Go"}],"uid":1}
   
   //格式化后
@@ -1090,8 +1031,8 @@ func main() {
 	}
   
   //如果我只是想获取uid加上langAge下所有Art的部分字段信息， 你可以这样
- lookup := filter.SelectMarshal("lookup", user)
-	fmt.Println(lookup.MustJSON())
+ lookup := filter.Select("lookup", user)
+	fmt.Println(lookup)
 	//{"langAge":[{"arts":[{"profile":{"c":"clang"},"values":["1","2"]}]},{"arts":[{"profile":{"c++":"cpp"},"values":["cpp1","cpp2"]}]},{"arts":[{"profile":{"Golang":"go"},"values":["Golang","Golang1"]}]}],"uid":1}
   
   
@@ -1231,29 +1172,5 @@ func GetUser(c *gin.Context) {
 	//}
 }
 
-```
-
-#### 不想直接被解析为json字符串？
-
-你可能不希望直接解析成字符串，希望过滤后再挂在到其他结构体被解析，如果解析成字符串被挂载上去会被当成字符串解析，所以也是支持的。
-
-```go
-func OkWithData(data interface{}, c *gin.Context) {
-	c.JSON(200, Response{
-		Code: 0,
-		Msg:  "ok",
-		Data: data, //这个data应该是一个结构体或者map不应该是已经解析好的json字符串
-	})
-}
-
-func UserRes(c *gin.Context) {
-  user := User{
-		UID:    1,
-		Sex:    1,
-		Avatar: "avatar",
-	}
-  
-	OkWithData(filter.Select("profile", user), c)
-}
 ```
 

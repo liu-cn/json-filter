@@ -4,13 +4,37 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/liu-cn/json-filter/filter"
+	"reflect"
 )
+
+type U struct {
+	A string `json:"a"`
+}
 
 type Slice struct {
 	Slices   []**string   `json:"slices,select(test)"`
 	Test     []**string   `json:"test,select(),omit(test)"`
 	SliceP   *[]**string  `json:"slice_p,select(test)"`
 	SlicesPP **[]**string `json:"slices_pp,select(test)"`
+}
+
+func TestU() {
+	a := []U{
+		{
+			A: "1",
+		},
+		{
+			A: "2",
+		},
+	}
+	b := U{}
+	of := reflect.TypeOf(a)
+	fmt.Println(of.PkgPath())
+	fmt.Println(of.PkgPath() == "")
+
+	of1 := reflect.TypeOf(b)
+	fmt.Println(of1.PkgPath())
+	fmt.Println(of1.PkgPath() == "")
 }
 
 func TestSlice() {
