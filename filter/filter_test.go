@@ -381,14 +381,14 @@ var s string
 func TestTestCases(t *testing.T) {
 
 	t.Run("all", func(t *testing.T) {
-		filter := SelectMarshal("all", NewTestCases())
-		fmt.Println(filter.MustJSON())
+		filter := Select("all", NewTestCases())
+		fmt.Println(filter)
 		//{"anonymous_value_name":"anonymous_value_name","article":{"name":"","page_num":0,"page_size":0,"price":"","title":""},"bool":true,"bool_p":true,"byte":1,"byte_p":10,"float32":32.1,"float64":64.1,"float_32_p":320.1,"float_64_p":320.1,"int":100,"int16":16,"int16_p":16,"int32":32,"int32_p":32,"int64":64,"int64_p":64,"int8":8,"int8_p":8,"int_p":100,"interface":"interface","interface_p":"interface p","m_time":"0001-01-01T00:00:00Z","m_time_p":null,"map":{"string":"map val","struct":{"age":0,"name":"hhhhh","struct":{"c_age":0,"c_name":""}}},"map_p":{"map_p":"map val"},"slice_bool":[true,true],"slice_bool_p":[true],"slice_byte":[10],"slice_byte_p":[10],"slice_float_32":[12.7],"slice_float_32_p":[320.1],"slice_float_64":[12.3],"slice_float_64_p":[320.1],"slice_int":[1,2],"slice_int_16":[1,2],"slice_int_16_p":[16],"slice_int_32":[1,2],"slice_int_32_i":[32],"slice_int_64":[1,2],"slice_int_64_i":[64],"slice_int_8":[1,2],"slice_int_8_p":[8],"slice_int_p":[100,100],"slice_interface":["12","13"],"slice_interface_p":["string p","string p"],"slice_map":[{"map1":1},{"map2":2}],"slice_map_p":[{"map1":1},{"map2":2}],"slice_slice_int":[[1,23],[2,3]],"slice_slice_users_case":[[{"age":1,"name":"","struct":{"c_age":0,"c_name":""}}],[{"age":2,"name":"","struct":{"c_age":0,"c_name":""}}]],"slice_string":["slice string","123"],"slice_string_s":["string p","string p"],"slice_struct":[],"slice_struct_p":[],"slice_time":["2022-03-07T16:58:40.546172+08:00","2022-03-07T16:58:40.546172+08:00"],"slice_uint":[1,3],"slice_uint_16":[1,3],"slice_uint_16_p":[16],"slice_uint_32":[1,2],"slice_uint_32_p":[32],"slice_uint_64":[1,4],"slice_uint_64_p":[64],"slice_uint_8":[1,2],"slice_uint_8_p":[8],"slice_uint_p":[100],"slice_user_p":[{"age":10,"name":null,"struct":null}],"slice_users_case":[{"age":0,"name":"nameP","struct":{"c_age":0,"c_name":""}}],"string":"string","string_p":"string p","struct":{},"struct_el":{"name":"el"},"struct_p":{},"structs":{"age":10,"name":"name","struct":{"c_age":100,"c_name":"cname"}},"structs_p":{"age":10,"name":"nameP","struct":{"c_age":10,"c_name":"nameP"}},"time":"0001-01-01T00:00:00Z","time_p":null,"u_int":1000,"u_int16":160,"u_int32":320,"u_int64":640,"u_int8":80,"u_intP":100,"u_int_16_p":16,"u_int_32_p":32,"u_int_64_p":64,"u_int_8_p":8,"y_time":"0001-01-01T00:00:00Z","y_time_p":null}
 	})
 
 	t.Run("intAll", func(t *testing.T) {
-		filter := SelectMarshal("intAll", NewTestCases())
-		fmt.Println(filter.MustJSON())
+		filter := Select("intAll", NewTestCases())
+		fmt.Println(filter)
 		//{"int":100,"int16":16,"int16_p":16,"int32":32,"int32_p":32,"int64":64,"int64_p":64,"int8":8,"int8_p":8,"int_p":100}
 	})
 	t.Run("intAllSelect", func(t *testing.T) {
@@ -411,24 +411,24 @@ func TestTestCases(t *testing.T) {
 	})
 
 	t.Run("sliceAll", func(t *testing.T) {
-		filter := SelectMarshal("sliceAll", NewTestCases())
-		fmt.Println(filter.MustJSON())
+		filter := Select("sliceAll", NewTestCases())
+		fmt.Println(filter)
 		//{"slice_bool":[true,true],"slice_bool_p":[true],"slice_byte":[10],"slice_byte_p":[10],"slice_float_32":[12.7],"slice_float_32_p":[320.1],"slice_float_64":[12.3],"slice_float_64_p":[320.1],"slice_int":[1,2],"slice_int_16":[1,2],"slice_int_16_p":[16],"slice_int_32":[1,2],"slice_int_32_i":[32],"slice_int_64":[1,2],"slice_int_64_i":[64],"slice_int_8":[1,2],"slice_int_8_p":[8],"slice_int_p":[100,100],"slice_interface":["12","13"],"slice_interface_p":["string p","string p"],"slice_map":[{"map1":1},{"map2":2}],"slice_map_p":[{"map1":1},{"map2":2}],"slice_slice_int":[[1,23],[2,3]],"slice_slice_users_case":[[],[]],"slice_string":["slice string","123"],"slice_string_s":["string p","string p"],"slice_struct":[],"slice_struct_p":[],"slice_time":["2022-03-07T17:03:15.003074+08:00","2022-03-07T17:03:15.003074+08:00"],"slice_uint":[1,3],"slice_uint_16":[1,3],"slice_uint_16_p":[16],"slice_uint_32":[1,2],"slice_uint_32_p":[32],"slice_uint_64":[1,4],"slice_uint_64_p":[64],"slice_uint_8":[1,2],"slice_uint_8_p":[8],"slice_uint_p":[100],"slice_user_p":[],"slice_users_case":[]}
 	})
 
 	t.Run("struct", func(t *testing.T) {
-		filter := SelectMarshal("struct", NewTestCases())
-		fmt.Println(filter.MustJSON())
+		filter := Select("struct", NewTestCases())
+		fmt.Println(filter)
 		//{"struct":{},"struct_el":{"name":"el"},"struct_p":{},"structs":{"struct":{"c_age":100,"c_name":"cname"}},"structs_p":{"struct":{"c_age":10}}}
 	})
 	t.Run("Anonymous", func(t *testing.T) {
-		filter := SelectMarshal("Anonymous", NewTestCases())
-		fmt.Println(filter.MustJSON())
+		filter := Select("Anonymous", NewTestCases())
+		fmt.Println(filter)
 		//{"anonymous_value_name":"anonymous_value_name","article":{"name":"","page_num":0,"page_size":0,"price":"","title":""}}
 	})
 	t.Run("mapAll", func(t *testing.T) {
-		filter := SelectMarshal("mapAll", NewTestCases())
-		fmt.Println(filter.MustJSON())
+		filter := Select("mapAll", NewTestCases())
+		fmt.Println(filter)
 		//{"map":{"string":"map val"},"map_p":{"map_p":"map val"}}
 	})
 

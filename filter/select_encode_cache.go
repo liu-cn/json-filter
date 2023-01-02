@@ -7,8 +7,6 @@ func (t *fieldNodeTree) ParseSelectValueWithCache(key, selectScene string, el in
 
 	typeOf := reflect.TypeOf(el)
 	valueOf := reflect.ValueOf(el)
-	pkgInfo := typeOf.PkgPath()
-	pkgInfo = pkgInfo + "." + typeOf.Name()
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Ptr: //如果是指针类型则取地址重新判断类型
@@ -37,7 +35,7 @@ TakePointerValue: //取指针的值
 			t.Val = struct{}{}
 			return
 		}
-
+		pkgInfo := typeOf.PkgPath() + "." + typeOf.Name()
 		for i := 0; i < typeOf.NumField(); i++ {
 			tag, find := tagCache.getTag("", selectScene, pkgInfo, true, typeOf.Field(i).Name, nil)
 			if !find {

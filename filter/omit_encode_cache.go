@@ -8,8 +8,8 @@ func (t *fieldNodeTree) ParseOmitValueWithCache(key, omitScene string, el interf
 
 	typeOf := reflect.TypeOf(el)
 	valueOf := reflect.ValueOf(el)
-	pkgInfo := typeOf.PkgPath()
-	pkgInfo = pkgInfo + "." + typeOf.Name()
+	//pkgInfo := typeOf.PkgPath()
+	//pkgInfo = pkgInfo + "." + typeOf.Name()
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Ptr: //如果是指针类型则取地址重新判断类型
@@ -41,6 +41,7 @@ TakePointerValue: //取指针的值
 			return
 		}
 		var isAnonymous bool
+		pkgInfo := typeOf.PkgPath() + "." + typeOf.Name()
 		for i := 0; i < typeOf.NumField(); i++ {
 
 			tag, find := tagCache.getTag("", omitScene, pkgInfo, false, typeOf.Field(i).Name, nil)
