@@ -99,9 +99,9 @@ TakePointerValue: //取指针的值
 			}
 		}
 		if t.Children == nil && !t.IsAnonymous {
-			//t.Val = struct{}{} //这样表示返回{}
+			t.Val = struct{}{} //这样表示返回{}
 
-			t.IsAnonymous = true //给他搞成匿名字段的处理方式，直接忽略字段
+			//t.IsAnonymous = true //给他搞成匿名字段的处理方式，直接忽略字段
 			//说明该结构体上没有选择任何字段 应该返回"字段名:{}"？还是直接连字段名都不显示？ 我也不清楚怎么好，后面再说
 			//反正你啥也不选这字段留着也没任何意义，要就不显示了，至少还能节省一点空间
 		}
@@ -164,7 +164,7 @@ TakePointerValue: //取指针的值
 	case reflect.Slice, reflect.Array:
 		l := valueOf.Len()
 		if l == 0 {
-			t.Val = nilSlice //空数组空切片直接解析为[],原生的json解析空的切片和数组会被解析为null，真的很烦，遇到脾气暴躁的前端直接跟你开撕。
+			t.Val = nil
 			return
 		}
 		t.IsSlice = true

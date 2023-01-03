@@ -6,7 +6,6 @@ import (
 )
 
 var (
-	nilSlice  = make([]int, 0, 0)
 	timeTypes = reflect.TypeOf(time.Now())
 )
 
@@ -99,9 +98,9 @@ TakePointerValue: //取指针的值
 			}
 		}
 		if t.Children == nil && !t.IsAnonymous {
-			//t.Val = struct{}{} //这样表示返回{}
+			t.Val = struct{}{} //这样表示返回{}
 
-			t.IsAnonymous = true //给他搞成匿名字段的处理方式，直接忽略字段
+			//t.IsAnonymous = true //给他搞成匿名字段的处理方式，直接忽略字段
 			//说明该结构体上没有选择任何字段 应该返回"字段名:{}"
 		}
 	case reflect.Bool,
@@ -163,7 +162,7 @@ TakePointerValue: //取指针的值
 	case reflect.Slice, reflect.Array:
 		l := valueOf.Len()
 		if l == 0 {
-			t.Val = nilSlice //空数组空切片直接解析为[]
+			t.Val = nil
 			return
 		}
 		t.IsSlice = true
