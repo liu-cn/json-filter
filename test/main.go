@@ -14,7 +14,21 @@ func mustJson(v interface{}) string {
 	return string(marshal)
 }
 
-func main() {
+type Uu struct {
+	Name string `json:"name"`
+}
 
-	fmt.Println(filter.Select("intAll", All{}))
+type Us struct {
+	Name string   `json:"name,select(h)"`
+	H    struct{} `json:"h,select(h)"`
+	Uu   Uu       `json:"uu,select(h),omit(h)"`
+	S    []string `json:"s,select(h)"`
+}
+
+func main() {
+	//fmt.Println(filter.Select("intAll", All{}))
+	fmt.Println(filter.Select("h", Us{}))
+	//fmt.Println(filter.Select("h", struct{}{}))
+	//fmt.Println(filter.Omit("h", Us{}))
+	//fmt.Println(filter.Omit("h", struct{}{}))
 }
