@@ -603,7 +603,7 @@ func UserRes(c *gin.Context) {
 
 golang的json字段过滤器，随意选择字段，随意输出指定结构体的字段，复用结构体，**全面支持泛型**，**对于go所有版本均完美兼容**，官方json库能做的json-filter全部兼容和支持。
 
-视频教程快速入门：https://www.bilibili.com/video/BV1ba411b7m1/
+视频教程快速入门：https://www.bilibili.com/video/BV1s14y1G72v/
 
 **代码有很多值得优化和改进的地方，非常欢迎大家一起参与贡献代码，优化代码，贡献文档，提意见，后面会持续优化，希望能变得更强，开源项目全靠用爱发电。**
 
