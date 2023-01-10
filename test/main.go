@@ -38,10 +38,18 @@ type Us struct {
 	//Uu   Uu       `json:"uu,select(h),omit(h)"`
 	//S    []string `json:"s,select(h)"`
 
-	BB [3]byte `json:"bb,select(all)"`
+	BB      [3]byte `json:"bb,select(all)"`
+	Avatar  []byte  `json:"avatar,select(all),func(GetAvatar)"`
+	Avatar2 []byte  `json:"avatar2,select(all),func(GetAvatar2)"`
+	UID     UID     `json:"uid,select(all)"`
+	UIDs    UIDs    `json:"uids,select(all)"`
+}
 
-	UID  UID  `json:"uid,select(all)"`
-	UIDs UIDs `json:"uids,select(all)"`
+func (u Us) GetAvatar() string {
+	return string(u.Avatar[:]) + ".jpg"
+}
+func (u *Us) GetAvatar2() string {
+	return string(u.Avatar[:]) + ".jpg"
 }
 
 func newUs() Us {
@@ -64,13 +72,16 @@ func main() {
 		B:          []byte(`{"a":"1"}`),
 		UID:        UID{1, 3, 4},
 		UIDs:       UIDs{1, 23, 55},
+		Avatar:     []byte("uuid"),
+		Avatar2:    []byte("uuid2"),
 	}
 
 	//fmt.Println(mustJson(u))
 	//fmt.Println(filter.Omit("h", u))
 	fmt.Println(filter.Select("all", u))
-
 	fmt.Println(filter.Omit("all", u))
+	fmt.Println(filter.Select("all", &u))
+	fmt.Println(filter.Omit("all", &u))
 	TestSlice()
 	TestMap()
 	TestU()
