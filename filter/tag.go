@@ -22,6 +22,8 @@ type tag struct {
 	IsAnonymous bool
 	////为空忽略
 	Omitempty bool
+	//自定义处理函数
+	Function string
 }
 
 func newSelectTag(tagStr, selectScene, fieldName string) tag {
@@ -55,9 +57,11 @@ func newSelectTag(tagStr, selectScene, fieldName string) tag {
 					//说明选中了tag里的场景,不应该被忽略
 					tagEl.IsOmitField = false
 					tagEl.IsSelect = true
-					return tagEl
 				}
 			}
+		}
+		if strings.HasPrefix(s, "func(") {
+			tagEl.Function = s[5 : len(s)-1]
 		}
 	}
 	return tagEl
@@ -102,6 +106,9 @@ func newOmitTag(tagStr, omitScene, fieldName string) tag {
 					return tagEl
 				}
 			}
+		}
+		if strings.HasPrefix(s, "func(") {
+			tagEl.Function = s[5 : len(s)-1]
 		}
 	}
 	return tagEl

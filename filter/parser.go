@@ -210,8 +210,21 @@ TakeValueOfPointerValue: //这里主要是考虑到有可能用的不是一级�
 			ParentNode:  t,
 			IsAnonymous: isAnonymous,
 		}
-
 		value := valueOf.Field(i)
+		if tag.Function != "" {
+			function := valueOf.MethodByName(tag.Function)
+			if !function.IsValid() {
+				if valueOf.CanAddr() {
+					function = valueOf.Addr().MethodByName(tag.Function)
+				}
+			}
+			if function.IsValid() {
+				values := function.Call([]reflect.Value{})
+				if len(values) != 0 {
+					value = values[0]
+				}
+			}
+		}
 		if value.Kind() == reflect.Ptr {
 		TakeFieldValue:
 			if value.Kind() == reflect.Ptr {
