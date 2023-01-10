@@ -18,17 +18,60 @@ type Uu struct {
 	Name string `json:"name"`
 }
 
+type UID [3]byte
+type UIDs []byte
+
+//func (u UID) String() string {
+//	return "uid"
+//}
+
+func (u UID) MarshalText() (text []byte, err error) {
+	return []byte("uid"), nil
+}
+
 type Us struct {
-	Name string   `json:"name,select(h)"`
-	H    struct{} `json:"h,select(h)"`
-	Uu   Uu       `json:"uu,select(h),omit(h)"`
-	S    []string `json:"s,select(h)"`
+	//Name       string   `json:"name,select(all),omit(h)"`
+	B          []byte   `json:"b,select(all),omit(h)"`
+	EmptySlice []string `json:"empty_slice,select(all),omit(h)"`
+
+	//H    struct{} `json:"h,select(h)"`
+	//Uu   Uu       `json:"uu,select(h),omit(h)"`
+	//S    []string `json:"s,select(h)"`
+
+	BB [3]byte `json:"bb,select(all)"`
+
+	UID  UID  `json:"uid,select(all)"`
+	UIDs UIDs `json:"uids,select(all)"`
+}
+
+func newUs() Us {
+	return Us{
+		//Name: "1",
+		//H:    struct{}{},
+		//Uu: Uu{
+		//	Name: "uu",
+		//},
+		//S: []string{"1", "2"},
+	}
 }
 
 func main() {
-	//fmt.Println(filter.Select("intAll", All{}))
-	fmt.Println(filter.Select("h", Us{}))
-	//fmt.Println(filter.Select("h", struct{}{}))
-	//fmt.Println(filter.Omit("h", Us{}))
-	//fmt.Println(filter.Omit("h", struct{}{}))
+
+	//var bb = []byte(`{"a":"1"}`)
+	u := Us{
+		BB:         [3]byte{1, 2, 4},
+		EmptySlice: make([]string, 0, 1),
+		B:          []byte(`{"a":"1"}`),
+		UID:        UID{1, 3, 4},
+		UIDs:       UIDs{1, 23, 55},
+	}
+
+	//fmt.Println(mustJson(u))
+	//fmt.Println(filter.Omit("h", u))
+	fmt.Println(filter.Select("all", u))
+
+	fmt.Println(filter.Omit("all", u))
+	TestSlice()
+	TestMap()
+	TestU()
 }

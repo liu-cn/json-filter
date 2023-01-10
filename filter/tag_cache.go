@@ -53,3 +53,12 @@ func (c *cache) getTag(tagStr string, scene string, pkgInfo string, isSelect boo
 	}
 	return v, true
 }
+func (c *cache) getOmitTag(scene string, pkgInfo string, fieldName string) (tag, bool) {
+	key := c.key(pkgInfo, scene, fieldName, false)
+
+	v, ok := c.c[key]
+	if !ok {
+		return tag{}, false
+	}
+	return v, true
+}

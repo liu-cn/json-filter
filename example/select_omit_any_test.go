@@ -21,15 +21,15 @@ func newAnyway() Anyway {
 }
 
 func TestSelectAny(t *testing.T) {
-	fmt.Println(filter.SelectMarshal("chat", newAnyway()).MustJSON())
+	fmt.Println(filter.Select("chat", newAnyway()))
 	//{"age":10,"name":"boyan"}
-	fmt.Println(filter.SelectMarshal("article", newAnyway()).MustJSON())
+	fmt.Println(filter.Select("article", newAnyway()))
 	//{"name":"boyan","sex":10}
 }
 
 func TestOmitAny(t *testing.T) {
-	fmt.Println(filter.OmitMarshal("user", newAnyway()).MustJSON())
+	fmt.Println(filter.Omit("user", newAnyway()))
 	//{"age":10}
-	fmt.Println(filter.OmitMarshal("profile", newAnyway()).MustJSON())
+	fmt.Println(filter.Omit("profile", newAnyway()))
 	//{"name":"boyan"}
 }

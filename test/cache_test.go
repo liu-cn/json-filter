@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/liu-cn/json-filter/filter"
 	"github.com/liu-cn/pkg/benchmark"
-	"testing"
 )
 
 func getCacheVal(s string, el interface{}, isSelect bool) string {
@@ -21,7 +20,6 @@ func getCacheVal(s string, el interface{}, isSelect bool) string {
 			return json1
 		} else {
 			ss := filter.Omit(s, el)
-
 			marshal, err := json.Marshal(ss)
 			if err != nil {
 				panic(err)
@@ -35,10 +33,10 @@ func getCacheVal(s string, el interface{}, isSelect bool) string {
 }
 
 type result struct {
-	s     string
-	eq    bool
-	json1 string
-	json2 string
+	s         string
+	eq        bool
+	cacheJson string
+	noCache   string
 }
 
 func eq(s string, el interface{}, isSelect bool) result {
@@ -47,19 +45,17 @@ func eq(s string, el interface{}, isSelect bool) result {
 	filter.EnableCache(false)
 	defer filter.EnableCache(true)
 	if isSelect {
-		json = filter.SelectMarshal(s, el).MustJSON()
+		json = mustJson(filter.Select(s, el))
+		//json = filter.SelectMarshal(s, el).MustJSON()
 	} else {
-		json = filter.OmitMarshal(s, el).MustJSON()
+		json = mustJson(filter.Omit(s, el))
+		//json = filter.OmitMarshal(s, el).MustJSON()
 	}
 	return result{
-		s:     s,
-		json1: val,
-		json2: json,
-		eq:    json == val,
+		s:         s,
+		cacheJson: val,
+		noCache:   json,
+		eq:        json == val,
 	}
-
-}
-
-func TestAll(t *testing.T) {
 
 }
