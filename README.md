@@ -615,6 +615,8 @@ golang的json字段过滤器，随意选择字段，随意输出指定结构体�
 
 [omit选择器排除过滤](#omit选择器排除过滤)
 
+[func选择器自定义方法进行字段处理](#func选择器自定义方法进行字段处理)
+
 [$any标识符任意场景解析](#$any标识符任意场景解析)
 
 [过滤后的Filter结构体的方法](#过滤后的Filter结构体的方法)
@@ -761,6 +763,51 @@ Nickname string `json:"nickname,omitempty,select(article|profile)"`   //为“�
 Age int `json:"age,omitempty,select(article|profile)"` //为0忽略
 
 //空结构体也可以忽略
+```
+
+
+### func选择器自定义方法进行字段处理
+```go
+type Image struct {
+	Url     []byte `json:"url,select(img),func(GetUrl)"`
+	Path    string `json:"path,select(img),func(GetImagePath)"`
+	Name    string `json:"name"`
+	Hot     int    `json:"hot,select(img),func(GetHot)"` //热度
+	Like    int
+	Collect int
+	Forward int
+}
+
+func (i Image) GetUrl() string {
+	return string(i.Url) + ".jpg"
+}
+
+// 指针接收器的方法只有在过滤时候传送指针才可以保证此方法被正常调用
+func (i *Image) GetImagePath() string {
+	return i.Path + i.Name + ".png"
+}
+
+// 计算热度
+func (i Image) GetHot() int {
+	return i.Like * i.Forward * i.Collect
+}
+
+func TestFunc(t *testing.T) {
+	img := Image{
+		Url:     []byte("url"),
+		Path:    "path",
+		Name:    "_golang",
+		Collect: 10,
+		Like:    100,
+		Forward: 50,
+	}
+	fmt.Println(filter.Select("img", img))
+	//{"hot":50000,"path":"path","url":"url.jpg"}
+
+	fmt.Println(filter.Select("img", &img)) //只有传入指针才可以调用绑定指针接收器方法
+	//{"hot":50000,"path":"path_golang.png","url":"url.jpg"}
+}
+
 ```
 
 
