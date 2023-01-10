@@ -6,8 +6,45 @@ type Filter struct {
 	node *fieldNodeTree
 }
 
+// Select 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+func Select(selectScene string, el interface{}) interface{} {
+	return jsonFilter(selectScene, el, true)
+}
+
+func jsonFilter(selectScene string, el interface{}, isSelect bool) Filter {
+	tree := &fieldNodeTree{
+		Key:        "",
+		ParentNode: nil,
+	}
+	tree.parseAny("", selectScene, el, isSelect)
+	return Filter{
+		node: tree,
+	}
+}
+
+// Omit 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+func Omit(omitScene string, el interface{}) interface{} {
+	return jsonFilter(omitScene, el, false)
+}
+
+// EnableCache 决定是否启用缓存，默认开启（强烈建议，除非万一缓存模式下出现bug，可以关闭缓存退回曾经的无缓存过滤模式），开启缓存后会有30%-40%的性能提升，开启缓存并没有副作用，只是会让结构体的字段tag常驻内存减少tag字符串处理操作
+func EnableCache(enable bool) {
+	enableCache = enable
+}
+
+// Deprecated
+// SelectMarshal 不建议使用，第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。
+func SelectMarshal(selectScene string, el interface{}) Filter {
+	return jsonFilter(selectScene, el, true)
+}
+
+// Deprecated
+// OmitMarshal 不建议使用，第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
+func OmitMarshal(omitScene string, el interface{}) Filter {
+	return jsonFilter(omitScene, el, false)
+}
 func (f Filter) MarshalJSON() ([]byte, error) {
-	return f.node.Bytes()
+	return useJSONMarshalFunc(f.node.Marshal())
 }
 
 // Deprecated
@@ -40,88 +77,4 @@ func (f Filter) String() string {
 		return fmt.Sprintf("Filter Err: %s", err.Error())
 	}
 	return json
-}
-
-// Deprecated
-// SelectMarshal 不建议使用，第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。
-func SelectMarshal(selectScene string, el interface{}) Filter {
-	if enableCache {
-		return selectWithCache(selectScene, el)
-	}
-	return selectMarshal(selectScene, el)
-}
-func selectMarshal(selectScene string, el interface{}) Filter {
-	tree := &fieldNodeTree{
-		Key:        "",
-		ParentNode: nil,
-	}
-	tree.ParseSelectValue("", selectScene, el)
-	return Filter{
-		node: tree,
-	}
-}
-
-// Select 直接返回过滤后的数据结构，相当于直接SelectMarshal后再调用Interface方法
-func Select(selectScene string, el interface{}) interface{} {
-	if enableCache {
-		return selectWithCache(selectScene, el)
-	}
-	return selectMarshal(selectScene, el)
-}
-
-// selectWithCache 直接返回过滤后的数据结构，相当于直接SelectMarshal后再调用Interface方法
-func selectWithCache(selectScene string, el interface{}) Filter {
-	tree := &fieldNodeTree{
-		Key:        "",
-		ParentNode: nil,
-	}
-	tree.ParseSelectValueWithCache("", selectScene, el)
-	return Filter{
-		node: tree,
-	}
-}
-
-// Omit 直接返回过滤后的数据结构，相当于直接OmitMarshal后再调用Interface方法
-func Omit(omitScene string, el interface{}) interface{} {
-	if enableCache {
-		return omitWithCache(omitScene, el)
-	}
-	return omitMarshal(omitScene, el)
-}
-
-// Deprecated
-// OmitMarshal 不建议使用，第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
-func OmitMarshal(omitScene string, el interface{}) Filter {
-	if enableCache {
-		return omitWithCache(omitScene, el)
-	}
-	return omitMarshal(omitScene, el)
-}
-
-func omitMarshal(omitScene string, el interface{}) Filter {
-	tree := &fieldNodeTree{
-		Key:        "",
-		ParentNode: nil,
-	}
-	tree.ParseOmitValue("", omitScene, el)
-	return Filter{
-		node: tree,
-	}
-}
-
-// omitWithCache 第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
-func omitWithCache(omitScene string, el interface{}) Filter {
-	tree := &fieldNodeTree{
-		Key:        "",
-		ParentNode: nil,
-	}
-	tree.ParseOmitValueWithCache("", omitScene, el)
-	return Filter{
-		node: tree,
-	}
-}
-
-// EnableCache 决定是否启用缓存，默认开启（强烈建议，除非万一缓存模式下出现bug，可以关闭缓存退回曾经的无缓存过滤模式），开启缓存后会有30%-40%的性能提升，开启缓存并没有副作用，只是会让结构体的字段tag常驻内存减少tag字符串处理操作
-func EnableCache(enable bool) {
-	enableCache = enable
 }

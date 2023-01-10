@@ -1,6 +1,7 @@
-package filter
+package main
 
 import (
+	"github.com/liu-cn/json-filter/filter"
 	"testing"
 	"time"
 )
@@ -50,26 +51,26 @@ var str string
 func BenchmarkUserPointer(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		_ = SelectMarshal("article", &user)
+		_ = filter.SelectMarshal("article", &user)
 	}
 }
 
 func BenchmarkUserPointerWithCache(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		_ = Select("article", &user)
+		_ = filter.Select("article", &user)
 	}
 }
 
 func BenchmarkUserVal(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		_ = SelectMarshal("article", user)
+		_ = filter.SelectMarshal("article", user)
 	}
 }
 func BenchmarkUserValWithCache(b *testing.B) {
 	user := newUsers()
 	for i := 0; i < b.N; i++ {
-		_ = Select("article", user)
+		_ = filter.Select("article", user)
 	}
 }

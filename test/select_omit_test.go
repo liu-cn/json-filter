@@ -10,7 +10,7 @@ func TestOmit(t *testing.T) {
 	for _, want := range wants {
 		r := eq(want, cases, false)
 		if !r.eq {
-			t.Errorf("json1:%v json2:%v s:%v", r.json1, r.json2, r.s)
+			t.Errorf("cacheJson:%v noCache:%v s:%v", r.cacheJson, r.noCache, r.s)
 		}
 	}
 	//=== RUN   TestOmit
@@ -24,7 +24,7 @@ func TestSelect(t *testing.T) {
 	for _, want := range wants {
 		r := eq(want, cases, true)
 		if !r.eq {
-			t.Errorf("json1:%v json2:%v s:%v", r.json1, r.json2, r.s)
+			t.Errorf("cacheJson:%v noCache:%v s:%v", r.cacheJson, r.noCache, r.s)
 		}
 	}
 	//=== RUN   TestSelect

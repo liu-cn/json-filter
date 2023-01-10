@@ -5,6 +5,7 @@ import (
 )
 
 type fieldNodeTree struct {
+	isSelect    bool             //是否是select 方法
 	Key         string           //字段名
 	Val         interface{}      //字段值，基础数据类型，int string，bool 等类型直接存在这里面，如果是struct,切片数组map 类型则字段所有k v会存在ChildNodes里
 	IsSlice     bool             //是否是切片，或者数组，
