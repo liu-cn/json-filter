@@ -3,12 +3,11 @@ package main
 import (
 	"encoding/json"
 	"github.com/liu-cn/json-filter/filter"
-	"github.com/liu-cn/pkg/benchmark"
 )
 
 func getCacheVal(s string, el interface{}, isSelect bool) string {
 	st := ""
-	benchmark.TimeAndRes(func() interface{} {
+	TimeAndRes(func() interface{} {
 		if isSelect {
 			ss := filter.Select(s, el)
 			marshal, err := json.Marshal(ss)
