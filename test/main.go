@@ -63,7 +63,15 @@ func newUs() Us {
 	}
 }
 
+type Us2 struct {
+	Data interface{} `json:"data,select(all)"`
+}
+
 func main() {
+	fmt.Println(filter.Omit("1111", Us2{Data: map[string]interface{}{
+		"1": 1,
+	}}))
+
 	//var bb = []byte(`{"a":"1"}`)
 	u := Us{
 		BB:         [3]byte{1, 2, 4},
