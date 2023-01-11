@@ -70,3 +70,24 @@ func ExampleOmit() {
 	//{"hot":120,"tags":[{"name":"foo"},{"name":"bar"}]}
 	//{"hot":120,"tags":[{"icon":"icon"},{"icon":"icon"}]}
 }
+
+type InterfaceTest struct {
+	Data interface{} `json:"data"`
+}
+
+func ExampleFilter_Interface() {
+
+	fmt.Println(Omit("", InterfaceTest{Data: map[string]interface{}{
+		"1": 1,
+	}}))
+	fmt.Println(Omit("", InterfaceTest{Data: map[string]interface{}{
+		"1": 1,
+		"2": map[string]interface{}{
+			"3": 3,
+		},
+	}}))
+	//Output:
+	//{"data":{"1":1}}
+	//{"data":{"1":1,"2":{"3":3}}}
+
+}
