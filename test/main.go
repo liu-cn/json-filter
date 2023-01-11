@@ -14,16 +14,8 @@ func mustJson(v interface{}) string {
 	return string(marshal)
 }
 
-type Uu struct {
-	Name string `json:"name"`
-}
-
 type UID [3]byte
 type UIDs []byte
-
-//func (u UID) String() string {
-//	return "uid"
-//}
 
 func (u UID) MarshalText() (text []byte, err error) {
 	return []byte("uid"), nil
@@ -33,16 +25,11 @@ type Us struct {
 	//Name       string   `json:"name,select(all),omit(h)"`
 	B          []byte   `json:"b,select(all),omit(h)"`
 	EmptySlice []string `json:"empty_slice,select(all),omit(h)"`
-
-	//H    struct{} `json:"h,select(h)"`
-	//Uu   Uu       `json:"uu,select(h),omit(h)"`
-	//S    []string `json:"s,select(h)"`
-
-	BB      [3]byte `json:"bb,select(all)"`
-	Avatar  []byte  `json:"avatar,select(all),func(GetAvatar)"`
-	Avatar2 []byte  `json:"avatar2,select(all),func(GetAvatar2)"`
-	UID     UID     `json:"uid,select(all)"`
-	UIDs    UIDs    `json:"uids,select(all)"`
+	BB         [3]byte  `json:"bb,select(all)"`
+	Avatar     []byte   `json:"avatar,select(all),func(GetAvatar)"`
+	Avatar2    []byte   `json:"avatar2,select(all),func(GetAvatar2)"`
+	UID        UID      `json:"uid,select(all)"`
+	UIDs       UIDs     `json:"uids,select(all)"`
 }
 
 func (u Us) GetAvatar() string {
@@ -50,21 +37,6 @@ func (u Us) GetAvatar() string {
 }
 func (u *Us) GetAvatar2() string {
 	return string(u.Avatar[:]) + ".jpg"
-}
-
-func newUs() Us {
-	return Us{
-		//Name: "1",
-		//H:    struct{}{},
-		//Uu: Uu{
-		//	Name: "uu",
-		//},
-		//S: []string{"1", "2"},
-	}
-}
-
-type Us2 struct {
-	Data interface{} `json:"data,select(all)"`
 }
 
 func main() {
@@ -84,18 +56,8 @@ func main() {
 	}
 	list := []Us{u, u, u}
 	fmt.Println(filter.Omit("1", &list))
-	//return
-	fmt.Println(mustJson(u))
-	//fmt.Println(filter.Omit("h", u))
-	//fmt.Println(filter.Select("all", u))
-	//fmt.Println(filter.Omit("all", u))
-	//fmt.Println(filter.Select("all", &u))
-	//fmt.Println(filter.Omit("all", &u))
-	//TestSlice()
-	//TestMap()
-	//TestU()
-
-	ExampleOmit()
+	//fmt.Println(mustJson(u))
+	//ExampleOmit()
 }
 
 func ExampleOmit() {
