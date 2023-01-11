@@ -18,6 +18,10 @@ TakePointerValue: //取指针的值
 		valueOf = valueOf.Elem()
 		typeOf = typeOf.Elem()
 		goto TakePointerValue
+	case reflect.Interface:
+		valueOf = reflect.ValueOf(valueOf.Interface())
+		typeOf = valueOf.Type()
+		goto TakePointerValue
 	case reflect.Struct:
 		parserStruct(typeOf, valueOf, t, scene, key, isSelect)
 	case reflect.Bool,
