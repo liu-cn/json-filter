@@ -40,9 +40,6 @@ func (u *Us) GetAvatar2() string {
 }
 
 func main() {
-	fmt.Println(filter.Omit("1111", Us2{Data: map[string]interface{}{
-		"1": 1,
-	}}))
 
 	//var bb = []byte(`{"a":"1"}`)
 	u := Us{
