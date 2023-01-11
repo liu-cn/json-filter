@@ -10,12 +10,12 @@ type tagInfo struct {
 	omit bool //表示这个字段忽略
 }
 
-func (t *fieldNodeTree) parseAny(key, scene string, el interface{}, isSelect bool) {
-	typeOf := reflect.TypeOf(el)
-	valueOf := reflect.ValueOf(el)
+func (t *fieldNodeTree) parseAny(key, scene string, valueOf reflect.Value, isSelect bool) {
+	typeOf := valueOf.Type()
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Ptr: //如果是指针类型则取地址重新判断类型
+		valueOf = valueOf.Elem()
 		typeOf = typeOf.Elem()
 		goto TakePointerValue
 	case reflect.Struct:
@@ -143,7 +143,7 @@ takeVMap:
 			nodeTree.IsNil = true
 			t.AddChild(nodeTree)
 		} else {
-			nodeTree.parseAny(k, scene, val.Interface(), isSelect)
+			nodeTree.parseAny(k, scene, val, isSelect)
 			t.AddChild(nodeTree)
 		}
 	}
@@ -248,7 +248,7 @@ TakeValueOfPointerValue: //这里主要是考虑到有可能用的不是一级�
 			}
 		}
 
-		tree.parseAny(tag.UseFieldName, scene, value.Interface(), isSelect)
+		tree.parseAny(tag.UseFieldName, scene, value, isSelect)
 
 		if t.IsAnonymous {
 			t.AnonymousAddChild(tree)
@@ -310,7 +310,7 @@ func parserSliceOrArray(typeOf reflect.Type, valueOf reflect.Value, t *fieldNode
 			node.IsNil = true
 			t.AddChild(node)
 		} else {
-			node.parseAny("", scene, val.Interface(), isSelect)
+			node.parseAny("", scene, val, isSelect)
 			t.AddChild(node)
 		}
 	}
