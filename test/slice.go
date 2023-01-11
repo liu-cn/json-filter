@@ -53,14 +53,14 @@ func TestSlice() {
 		Test:     slice,
 	}
 
-	fmt.Println("slice select:", filter.SelectMarshal("test", test).MustJSON())
+	fmt.Println("slice select:", filter.Select("test", test))
 	//{"slice_p":["值"],"slices":["值"],"slices_pp":["值"]}
-	fmt.Println("slice omit:", filter.OmitMarshal("test", test).MustJSON())
+	fmt.Println("slice omit:", filter.Omit("test", test))
 	//{"slice_p":["值"],"slices":["值"],"slices_pp":["值"]}
 
 	marshal, _ := json.Marshal(test)
 	fmt.Println("原生slice json 解析", string(marshal))
 	//{"slices":["值"],"test":["值"],"slice_p":["值"],"slices_pp":["值"]}
 
-	fmt.Println(filter.SelectMarshal("test", test))
+	fmt.Println(filter.Select("test", test))
 }
