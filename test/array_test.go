@@ -96,6 +96,19 @@ func TestSelectArray(t *testing.T) {
 	//PASS
 
 }
+func TestSelectOmitTag(t *testing.T) {
+	fmt.Println(filter.Select("any", newArray().CPP))
+	fmt.Println(filter.Select("any", *newArray().CPP))
+	fmt.Println(filter.Omit("any", newArray().CPP))
+	fmt.Println(filter.Omit("any", *newArray().CPP))
+	//=== RUN   TestSelectOmitTag
+	//[{"name":"tag"},{"name":"tag"},{"name":"tag"}]
+	//[{"name":"tag"},{"name":"tag"},{"name":"tag"}]
+	//[{"name":"tag"},{"name":"tag"},{"name":"tag"}]
+	//[{"name":"tag"},{"name":"tag"},{"name":"tag"}]
+	//--- PASS: TestSelectOmitTag (0.00s)
+	//PASS
+}
 
 func TestOmitArray(t *testing.T) {
 	for _, want := range arrayWants {
