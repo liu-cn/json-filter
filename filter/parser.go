@@ -14,7 +14,7 @@ func (t *fieldNodeTree) parseAny(key, scene string, valueOf reflect.Value, isSel
 	typeOf := valueOf.Type()
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
-	case reflect.Ptr: //如果是指针类型则取地址重新判断类型
+	case reflect.Ptr: //如果是指针类型则取值重新判断类型
 		valueOf = valueOf.Elem()
 		typeOf = typeOf.Elem()
 		goto TakePointerValue
@@ -110,12 +110,6 @@ func getSelectTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagI
 }
 
 func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect bool) {
-
-takeVMap:
-	if valueOf.Kind() == reflect.Ptr {
-		valueOf = valueOf.Elem()
-		goto takeVMap
-	}
 	keys := valueOf.MapKeys()
 	if len(keys) == 0 { //空map情况下解析为{}
 		t.Val = struct{}{}
@@ -165,18 +159,6 @@ func parserBaseType(valueOf reflect.Value, t *fieldNodeTree, key string) {
 }
 
 func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
-
-TakeValueOfPointerValue: //这里主要是考虑到有可能用的不是一级指针，如果是***int 等多级指针就需要不断的取值
-	if valueOf.Kind() == reflect.Ptr {
-		if valueOf.IsNil() {
-			t.IsNil = true
-			return
-		} else {
-			valueOf = valueOf.Elem()
-			goto TakeValueOfPointerValue
-		}
-	}
-
 	if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
 		t.Key = key
 		t.Val = valueOf.Interface()
@@ -263,7 +245,6 @@ TakeValueOfPointerValue: //这里主要是考虑到有可能用的不是一级�
 }
 
 func parserSliceOrArray(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
-
 	val1 := valueOf.Interface()
 	ok := valueOf.CanConvert(byteTypes)
 	if ok {
