@@ -64,7 +64,6 @@ func newUs() Us {
 }
 
 func main() {
-
 	//var bb = []byte(`{"a":"1"}`)
 	u := Us{
 		BB:         [3]byte{1, 2, 4},
@@ -75,7 +74,9 @@ func main() {
 		Avatar:     []byte("uuid"),
 		Avatar2:    []byte("uuid2"),
 	}
-
+	list := []Us{u, u, u}
+	fmt.Println(filter.Omit("1", &list))
+	//return
 	fmt.Println(mustJson(u))
 	//fmt.Println(filter.Omit("h", u))
 	//fmt.Println(filter.Select("all", u))
