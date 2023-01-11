@@ -23,9 +23,9 @@ func TestMap() {
 	maps["test"] = &ptr
 	mp := &maps
 	mpp := &mp
-	fmt.Println("select:", filter.SelectMarshal("test", Map{M: maps, T: maps, MP: mp, MPP: mpp}).MustJSON())
+	fmt.Println("select:", filter.Select("test", Map{M: maps, T: maps, MP: mp, MPP: mpp}))
 	//	{"m":{"test":"c++从研发到脱发"},"mp":{"test":"c++从研发到脱发"},"mpp":{"test":"c++从研发到脱发"}}
 
-	fmt.Println("omit:", filter.OmitMarshal("test", Map{M: maps, T: maps, MP: mp, MPP: mpp}).MustJSON())
+	fmt.Println("omit:", filter.Select("test", Map{M: maps, T: maps, MP: mp, MPP: mpp}))
 	//{"m":{"test":"c++从研发到脱发"},"mp":{"test":"c++从研发到脱发"},"mpp":{"test":"c++从研发到脱发"}}
 }
