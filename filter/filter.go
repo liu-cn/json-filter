@@ -1,6 +1,9 @@
 package filter
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type Filter struct {
 	node *fieldNodeTree
@@ -16,7 +19,7 @@ func jsonFilter(selectScene string, el interface{}, isSelect bool) Filter {
 		Key:        "",
 		ParentNode: nil,
 	}
-	tree.parseAny("", selectScene, el, isSelect)
+	tree.parseAny("", selectScene, reflect.ValueOf(el), isSelect)
 	return Filter{
 		node: tree,
 	}
