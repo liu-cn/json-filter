@@ -19,9 +19,14 @@ TakePointerValue: //取指针的值
 		typeOf = typeOf.Elem()
 		goto TakePointerValue
 	case reflect.Interface:
-		valueOf = reflect.ValueOf(valueOf.Interface())
-		typeOf = valueOf.Type()
-		goto TakePointerValue
+		if !valueOf.IsNil() {
+			valueOf = reflect.ValueOf(valueOf.Interface())
+			typeOf = valueOf.Type()
+			goto TakePointerValue
+		} else {
+			parserNilInterface(t, key)
+		}
+
 	case reflect.Struct:
 		parserStruct(typeOf, valueOf, t, scene, key, isSelect)
 	case reflect.Bool,
@@ -36,6 +41,22 @@ TakePointerValue: //取指针的值
 		parserSliceOrArray(typeOf, valueOf, t, scene, key, isSelect)
 	}
 
+}
+
+func parserNilInterface(t *fieldNodeTree, key string) {
+	if t.IsAnonymous {
+		tree := &fieldNodeTree{
+			Key:        t.Key,
+			ParentNode: t,
+			Val:        t.Val,
+			IsNil:      true,
+		}
+		t.AnonymousAddChild(tree)
+	} else {
+		t.Val = nil
+		t.Key = key
+		t.IsNil = true
+	}
 }
 
 func getFieldOmitTag(field reflect.StructField, scene string) tagInfo {
