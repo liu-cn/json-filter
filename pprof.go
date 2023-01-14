@@ -26,7 +26,7 @@ func main() {
 		}
 		os.Exit(0)
 	}()
-
+	filter.EnableCache(true)
 	for {
 		j = filter.Select("article", newUser())
 	}

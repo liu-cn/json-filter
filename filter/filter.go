@@ -17,6 +17,7 @@ func Select(selectScene string, el interface{}) interface{} {
 func jsonFilter(selectScene string, el interface{}, isSelect bool) Filter {
 	tree := &fieldNodeTree{
 		Key:        "",
+		isRoot:     true,
 		ParentNode: nil,
 	}
 	tree.parseAny("", selectScene, reflect.ValueOf(el), isSelect)
@@ -81,3 +82,25 @@ func (f Filter) String() string {
 	}
 	return json
 }
+
+//// SelectCache 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+//func SelectCache(selectScene string, el interface{}) interface{} {
+//	return jsonFilterCache(selectScene, el, true)
+//}
+//
+//func jsonFilterCache(selectScene string, el interface{}, isSelect bool) Filter {
+//	tree := &fieldNodeTree{
+//		Key:        "",
+//		isRoot:     true,
+//		ParentNode: nil,
+//	}
+//	tree.parseAny2("", selectScene, reflect.ValueOf(el), isSelect)
+//	return Filter{
+//		node: tree,
+//	}
+//}
+//
+//// OmitCache 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+//func OmitCache(selectScene string, el interface{}) interface{} {
+//	return jsonFilterCache(selectScene, el, false)
+//}

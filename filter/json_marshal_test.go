@@ -20,7 +20,7 @@ func TestJsonMarshal(t *testing.T) {
 		Lang:  "Go",
 	}
 
-	f := SelectMarshal("lang", user)
+	f := Select("lang", user)
 	marshal, err := json.Marshal(f)
 	if err != nil {
 		panic(err)

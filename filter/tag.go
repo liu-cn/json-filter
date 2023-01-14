@@ -10,25 +10,20 @@ const (
 )
 
 type tag struct {
-	//执行的场景
-	SelectScene string
-	//该字段是否需要被忽略？
-	IsOmitField bool
-	//是选中的情况,标识该字段是否需要被解析
-	IsSelect bool
-	//字段名称
-	UseFieldName string
-	//IsAnonymous 标识该字段是否是匿名字段
-	IsAnonymous bool
-	////为空忽略
-	Omitempty bool
-	//自定义处理函数
-	Function string
+	SelectScene  string //执行的场景
+	IsOmitField  bool   //该字段是否需要被忽略？
+	IsSelect     bool   //是选中的情况,标识该字段是否需要被解析
+	FieldName    string //字段名
+	UseFieldName string //最终使用的字段名，没标签就用结构体字段名，tag里有标签就用标签名字
+	IsAnonymous  bool   //IsAnonymous 标识该字段是否是匿名字段
+	Omitempty    bool   //为空忽略
+	Function     string //自定义处理函数
 }
 
 func newSelectTag(tagStr, selectScene, fieldName string) tag {
 
 	tagEl := tag{
+		FieldName:   fieldName,
 		SelectScene: selectScene,
 		IsOmitField: true,
 	}
@@ -69,6 +64,7 @@ func newSelectTag(tagStr, selectScene, fieldName string) tag {
 
 func newOmitTag(tagStr, omitScene, fieldName string) tag {
 	tagEl := tag{
+		FieldName:   fieldName,
 		SelectScene: omitScene,
 		IsOmitField: false,
 		IsSelect:    true,
@@ -116,6 +112,7 @@ func newOmitTag(tagStr, omitScene, fieldName string) tag {
 
 func newOmitNotTag(omitScene, fieldName string) tag {
 	return tag{
+		FieldName:    fieldName,
 		IsSelect:     true,
 		UseFieldName: fieldName,
 		SelectScene:  omitScene,
