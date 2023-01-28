@@ -7,6 +7,12 @@
 
 ## English
 
+# future
+	1.重写缓存策略（已实现但是还没完全测试，性能有很大提升，在filter/cache.go 文件中）
+	2.内置json编码功能，消除对官方json编码工具的依赖（同时还可以提升性能），在过滤的同时编码。
+	3.提升反射性能
+
+
 Golang's JSON field filter can select fields at will, output fields of specified structures at will, and reuse structures.  **It fully supports generics** and is Compatible with all versions of go,The official json can support and be compatible with all json-filter
 
 list：
