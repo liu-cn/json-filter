@@ -5,8 +5,11 @@ import (
 )
 
 type fieldNodeTree struct {
-	isSelect    bool             //是否是select 方法
-	isRoot      bool             //是过滤的入口结构体
+	isSelect bool   //是否是select 方法
+	scene    string //场景
+	isRoot   bool   //是过滤的入口结构体
+	pkgPath  string //包路径
+
 	Key         string           //字段名
 	Val         interface{}      //字段值，基础数据类型，int string，bool 等类型直接存在这里面，如果是struct,切片数组map 类型则字段所有k v会存在ChildNodes里
 	IsSlice     bool             //是否是切片，或者数组，
@@ -16,6 +19,16 @@ type fieldNodeTree struct {
 	Children    []*fieldNodeTree //如果是struct则保存所有字段名和值的指针，如果是切片就保存切片的所有值
 	Tag         tag              //标签
 	fieldCache  *field           //缓存
+}
+
+func (t *fieldNodeTree) newNode(key string) *fieldNodeTree {
+	return &fieldNodeTree{
+		isSelect:   t.isSelect,
+		scene:      t.scene,
+		isRoot:     false,
+		Key:        key,
+		ParentNode: t,
+	}
 }
 
 func (t *fieldNodeTree) GetValue() (val interface{}, ok bool) {

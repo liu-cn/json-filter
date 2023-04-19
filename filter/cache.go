@@ -7,11 +7,11 @@ import (
 var fieldCacheVar fieldCache
 
 func init() {
-	fieldCacheVar.maps = make(map[string]*field)
+	fieldCacheVar.filterFieldMap = make(map[string]*field)
 }
 
 type fieldCache struct {
-	maps map[string]*field
+	filterFieldMap map[string]*field
 }
 type field struct {
 	index        int //该字段所处结构体的索引位置
@@ -47,16 +47,16 @@ TakePointerValue: //取指针的值
 			typeOf = valueOf.Type()
 			goto TakePointerValue
 		} else {
-			parserNilInterface(t, key)
+			t.parserNilInterface()
 		}
 	case reflect.Struct:
-		parserStructCache(typeOf, valueOf, t, scene, key, isSelect)
+		t.parserStructCache(typeOf, valueOf)
 	case reflect.Bool,
 		reflect.String,
 		reflect.Float64, reflect.Float32,
 		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		parserBaseType(valueOf, t, key)
+		t.parserBaseType(valueOf)
 	case reflect.Map:
 		parserMap(valueOf, t, scene, isSelect)
 	case reflect.Slice, reflect.Array:
@@ -65,68 +65,80 @@ TakePointerValue: //取指针的值
 
 }
 
-func parserStructCache(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
+func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.Value) {
 	if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
-		t.Key = key
+		//t.Key = key
 		t.Val = valueOf.Interface()
 		return
 	}
 	if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
-		t.Key = key
+		//t.Key = key
 		t.Val = struct{}{}
 		return
 	}
 	pkgInfo := typeOf.PkgPath() + "." + typeOf.Name()
 
-	cacheKey := getCacheKey(pkgInfo, scene, isSelect)
-	cacheField, ok := fieldCacheVar.maps[cacheKey]
-	if !ok {
+	cacheKey := getCacheKey(pkgInfo, t.scene, t.isSelect)
+	cacheField, ok := fieldCacheVar.filterFieldMap[cacheKey]
 
+	//说明缓存中不存在该字段的过滤信息
+	if !ok {
 		var parentField *field
+		//如果是最外层的结构
 		if t.isRoot {
-			//fieldCacheVar.maps[cacheKey] = &field{}
+			//fieldCacheVar.filterFieldMap[cacheKey] = &field{}
 			parentField = new(field)
-			fieldCacheVar.maps[cacheKey] = parentField
+			fieldCacheVar.filterFieldMap[cacheKey] = parentField
 		} else {
 			parentField = t.fieldCache
 		}
 
+		//遍历这个结构体的所有字段
 		for i := 0; i < typeOf.NumField(); i++ {
 			var tagInfo tagInfo
-			tagInfo = getSelectTag(scene, pkgInfo, i, typeOf)
-			if !isSelect {
-				tagInfo = getOmitTag(scene, pkgInfo, i, typeOf)
+			fieldType := typeOf.Field(i)
+			tagInfo = getFieldSelectTag(fieldType, t.scene)
+			//tagInfo = getSelectTag(scene, pkgInfo, i, typeOf)
+			if !t.isSelect {
+				tagInfo = getFieldOmitTag(fieldType, t.scene)
 			}
 
 			if tagInfo.omit {
 				continue
 			}
-			tag := tagInfo.tag
-			if tag.IsOmitField || !tag.IsSelect {
+			fieldTag := tagInfo.tag
+			if fieldTag.IsOmitField || !fieldTag.IsSelect {
 				continue
 			}
-			isAnonymous := typeOf.Field(i).Anonymous && tag.IsAnonymous ////什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
-			tag.IsAnonymous = isAnonymous
-			fieldCache := newField(tag, i)
-			fieldEl, ok1 := fieldCacheVar.maps[cacheKey]
+			isAnonymous := fieldType.Anonymous && fieldTag.IsAnonymous
+			fieldTag.IsAnonymous = isAnonymous
+
+			//能执行到这一步，说明该字段没被过滤掉，所以缓存应该缓存此字段信息。
+			cacheFieldEl := newField(fieldTag, i)
+			fieldEl, ok1 := fieldCacheVar.filterFieldMap[cacheKey]
 			if ok1 {
-				fieldEl.selectFields = append(fieldEl.selectFields, &fieldCache)
-				//fieldCacheVar.maps[cacheKey].selectFields = append(fieldCacheVar.maps[cacheKey].selectFields, &fieldCache)
+				//在该父节点的过滤列表里添加此字段
+				fieldEl.selectFields = append(fieldEl.selectFields, &cacheFieldEl)
+				//fieldCacheVar.filterFieldMap[cacheKey].selectFields = append(fieldCacheVar.filterFieldMap[cacheKey].selectFields, &fieldCache)
 			}
 
-			tree := &fieldNodeTree{
-				Key:         tag.UseFieldName,
-				ParentNode:  t,
-				IsAnonymous: isAnonymous,
-				Tag:         tag,
-				fieldCache:  &fieldCache,
-			}
+			treeNode := t.newNode(fieldTag.UseFieldName)
+			treeNode.IsAnonymous = isAnonymous
+			treeNode.fieldCache = &cacheFieldEl
+			treeNode.Tag = fieldTag
+			//tree := &fieldNodeTree{
+			//	Key:         fieldTag.UseFieldName,
+			//	ParentNode:  t,
+			//	IsAnonymous: isAnonymous,
+			//	Tag:         fieldTag,
+			//	fieldCache:  &cacheFieldEl,
+			//}
 			value := valueOf.Field(i)
-			if tag.Function != "" {
-				function := valueOf.MethodByName(tag.Function)
+			if fieldTag.Function != "" {
+				function := valueOf.MethodByName(fieldTag.Function)
 				if !function.IsValid() {
 					if valueOf.CanAddr() {
-						function = valueOf.Addr().MethodByName(tag.Function)
+						function = valueOf.Addr().MethodByName(fieldTag.Function)
 					}
 				}
 				if function.IsValid() {
@@ -140,11 +152,11 @@ func parserStructCache(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeT
 			TakeFieldValue:
 				if value.Kind() == reflect.Ptr {
 					if value.IsNil() {
-						if tag.Omitempty {
+						if fieldTag.Omitempty {
 							continue
 						}
-						tree.IsNil = true
-						t.AddChild(tree)
+						treeNode.IsNil = true
+						t.AddChild(treeNode)
 						continue
 					} else {
 						value = value.Elem()
@@ -152,19 +164,19 @@ func parserStructCache(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeT
 					}
 				}
 			} else {
-				if tag.Omitempty {
+				if fieldTag.Omitempty {
 					if value.IsZero() { //为零值忽略
 						continue
 					}
 				}
 			}
 
-			tree.parseAny2(tag.UseFieldName, scene, value, isSelect)
+			treeNode.parseAny3(value)
 
 			if t.IsAnonymous {
-				t.AnonymousAddChild(tree)
+				t.AnonymousAddChild(treeNode)
 			} else {
-				t.AddChild(tree)
+				t.AddChild(treeNode)
 			}
 		}
 	} else { //说明缓存取到
@@ -216,7 +228,7 @@ func parserStructCache(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeT
 				}
 			}
 
-			tree.parseAny2(tag.UseFieldName, scene, value, isSelect)
+			tree.parseAny3(value)
 
 			if t.IsAnonymous {
 				t.AnonymousAddChild(tree)
