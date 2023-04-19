@@ -6,13 +6,7 @@
 
 ​        [English](#English)
 
-
-
-[json-filter/logo.png at main · liu-cn/json-filter · GitHub](https://github.com/liu-cn/json-filter/blob/main/logo.png)
-
-
-
-<img title="" src="https://github.com/liu-cn/json-filter/blob/main/logo.png" alt="" width="650" height="100">
+<img title="" src="https://github.com/liu-cn/json-filter/blob/main/logo.png" alt="" data-align="center">
 
 ## English
 
