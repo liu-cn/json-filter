@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -81,6 +82,21 @@ func (f Filter) String() string {
 		return fmt.Sprintf("Filter Err: %s", err.Error())
 	}
 	return json
+}
+
+// EqualJSON 判断两个json字符串是否等价（有相同的键值，不同的顺序）
+func EqualJSON(jsonStr1, jsonStr2 string) (bool, error) {
+	var i interface{}
+	var i2 interface{}
+	err := json.Unmarshal([]byte(jsonStr1), &i)
+	if err != nil {
+		return false, err
+	}
+	err = json.Unmarshal([]byte(jsonStr2), &i2)
+	if err != nil {
+		return false, err
+	}
+	return reflect.DeepEqual(i, i2), nil
 }
 
 //// SelectCache 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示

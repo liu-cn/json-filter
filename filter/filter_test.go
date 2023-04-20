@@ -11,16 +11,14 @@ type MyTime = time.Time
 type YouTime = MyTime
 
 type TestCases struct {
-	Article `json:"article,select(all|Anonymous)"`
-
+	Article    `json:"article,select(all|Anonymous)"`
 	*Anonymous `json:",select(all|Anonymous)"`
-
-	Time   time.Time  `json:"time,select(all)"`
-	TimeP  *time.Time `json:"time_p,select(all)"`
-	MTime  MyTime     `json:"m_time,select(all)"`
-	MTimeP *MyTime    `json:"m_time_p,select(all)"`
-	YTime  YouTime    `json:"y_time,select(all)"`
-	YTimeP *YouTime   `json:"y_time_p,select(all)"`
+	Time       time.Time  `json:"time,select(all)"`
+	TimeP      *time.Time `json:"time_p,select(all)"`
+	MTime      MyTime     `json:"m_time,select(all)"`
+	MTimeP     *MyTime    `json:"m_time_p,select(all)"`
+	YTime      YouTime    `json:"y_time,select(all)"`
+	YTimeP     *YouTime   `json:"y_time_p,select(all)"`
 
 	Int    int    `json:"int,select(all|intAll)"`
 	Int8   int8   `json:"int8,select(all|intAll)"`
