@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Users struct {
+type Benchmark struct {
 	UID    uint   `json:"uid,select(article),omit(article|chat)"`    //select中表示选中的场景(该字段将会使用到的场景)
 	Avatar string `json:"avatar,select(article|chat),omit(article)"` //和上面一样此字段在article接口时才会解析该字段
 
@@ -16,12 +16,12 @@ type Users struct {
 	VipEndTime time.Time `json:"vip_end_time,select(profile),omit(article)"` //同上
 	Price      string    `json:"price,select(profile)"`                      //同上
 
-	Hobby   string    `json:"hobby,omitempty,select($any)"`           //任何场景下为空忽略
-	Lang    []LangAge `json:"lang,omitempty,select(1),omit(article)"` //任何场景下为空忽略
-	Profile Profile   `json:"profile,select($any)"`
+	Hobby   string             `json:"hobby,omitempty,select($any)"`           //任何场景下为空忽略
+	Lang    []BenchmarkLangAge `json:"lang,omitempty,select(1),omit(article)"` //任何场景下为空忽略
+	Profile BenchmarkProfile   `json:"profile,select($any)"`
 }
 
-type Profile struct {
+type BenchmarkProfile struct {
 	A string      `json:"a,select(chat|article),omit(chat|article)"`
 	B int         `json:"b,select(chat),omit(chat|article)"`
 	C string      `json:"c,select(article),omit()"`
@@ -34,20 +34,20 @@ type Profile struct {
 	J string      `json:"j,select(p),omit(chat|article)"`
 }
 
-type LangAge struct {
+type BenchmarkLangAge struct {
 	Name string `json:"name,omitempty,select($any)"`
 	Art  string `json:"art,omitempty,select($any)"`
 }
 
-func newUsers() Users {
-	return Users{
+func newUsers() Benchmark {
+	return Benchmark{
 		UID:        1,
 		Nickname:   "boyan",
 		Avatar:     "avatar",
 		Sex:        1,
 		VipEndTime: time.Now().Add(time.Hour * 24 * 365),
 		Price:      "999.9",
-		Lang: []LangAge{
+		Lang: []BenchmarkLangAge{
 			{
 				Name: "1",
 				Art:  "24",
