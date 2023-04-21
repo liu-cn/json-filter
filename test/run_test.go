@@ -23,7 +23,6 @@ func TestAll(t *testing.T) {
 	for _, v := range getTestCase() {
 		tests = append(tests, v)
 	}
-
 	for i, test := range tests {
 		var jsonFilter interface{}
 		if test.isSelect {
@@ -178,104 +177,18 @@ func getTestCase() []testCase {
 			scene:    "test",
 			want:     `{"m":{"test":"c++从研发到脱发"},"mp":{"test":"c++从研发到脱发"},"mpp":{"test":"c++从研发到脱发"}}`,
 			Struct:   newTestMap(),
+		}, {
+			isSelect: true,
+			scene:    "a",
+			want:     `{"a":"","b":null,"c":null,"d":null}`,
+			Struct: struct {
+				A interface{} `json:"a,select(a)"`
+				B interface{} `json:"b,select(a)"`
+				C interface{} `json:"c,select(a)"`
+				D interface{} `json:"d,select(a)"`
+			}{
+				A: "",
+			},
 		},
 	}
 }
-
-//func TestArray(t *testing.T) {
-//	tests:=[]testCase{
-//		{
-//			isSelect: true,
-//			scene: "A",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "B",
-//			Struct: newArray(),
-//			want: `{"B":[{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "C",
-//			Struct: newArray(),
-//			want: `{"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "AP",
-//			Struct: newArray(),
-//			want: `{"AP":[{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "BP",
-//			Struct: newArray(),
-//			want: `{"BP":[{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "CP",
-//			Struct: newArray(),
-//			want: `{"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "APP",
-//			Struct: newArray(),
-//			want: `{"APP":[{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "BPP",
-//			Struct: newArray(),
-//			want: `{"BPP":[{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: true,
-//			scene: "CPP",
-//			Struct: newArray(),
-//			want: `{"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},
-//		//omit
-//		{
-//			isSelect: false,
-//			scene: "A",
-//			Struct: newArray(),
-//			want: `{"AP":[{"name":"tag"}],"APP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "B",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"AP":[{"name":"tag"}],"APP":[{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "C",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"AP":[{"name":"tag"}],"APP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "AP",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"APP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "BP",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"AP":[{"name":"tag"}],"APP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "CP",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"AP":[{"name":"tag"}],"APP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "APP",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"AP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "BPP",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"AP":[{"name":"tag"}],"APP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CPP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},{
-//			isSelect: false,
-//			scene: "CPP",
-//			Struct: newArray(),
-//			want: `{"A":[{"name":"tag"}],"AP":[{"name":"tag"}],"APP":[{"name":"tag"}],"B":[{"name":"tag"},{"name":"tag"}],"BP":[{"name":"tag"},{"name":"tag"}],"BPP":[{"name":"tag"},{"name":"tag"}],"C":[{"name":"tag"},{"name":"tag"},{"name":"tag"}],"CP":[{"name":"tag"},{"name":"tag"},{"name":"tag"}]}`,
-//		},
-//	}
-//}
