@@ -2,14 +2,16 @@ package filter
 
 import (
 	"encoding/json"
+	"reflect"
 )
 
 type fieldNodeTree struct {
 	isSelect bool   //是否是select 方法
 	scene    string //场景
 	isRoot   bool   //是过滤的入口结构体
+	rootKind reflect.Kind //最外层的类型
+	kind reflect.Kind//该数据的类型
 	pkgPath  string //包路径
-
 	Key         string           //字段名
 	Val         interface{}      //字段值，基础数据类型，int string，bool 等类型直接存在这里面，如果是struct,切片数组map 类型则字段所有k v会存在ChildNodes里
 	IsSlice     bool             //是否是切片，或者数组，

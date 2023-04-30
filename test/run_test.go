@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/liu-cn/json-filter/filter"
 	"testing"
+
+	"github.com/liu-cn/json-filter/filter"
 )
 
 type testCase struct {
@@ -17,18 +18,34 @@ type testCase struct {
 func TestAll(t *testing.T) {
 	var tests []testCase
 	//添加所有测试用例
-	for _, v := range getTestArrayCase() {
-		tests = append(tests, v)
-	}
-	for _, v := range getTestCase() {
-		tests = append(tests, v)
-	}
+	tests = append(tests, getTestArrayCase()...)
+	tests = append(tests, getTestCase()...)
+	t.Run("v1",func(t *testing.T) {
+		runTestAll(tests, t,1)
+		runTestAll(tests, t,1)
+	})
+	t.Run("v2",func(t *testing.T) {
+		runTestAll(tests,t,2)
+		runTestAll(tests,t,2)
+	})
+	filter.EchoCache()
+}
+
+func runTestAll(tests []testCase, t *testing.T, version int) {
 	for i, test := range tests {
 		var jsonFilter interface{}
 		if test.isSelect {
-			jsonFilter = filter.Select(test.scene, test.Struct)
+			if version == 1 {
+				jsonFilter = filter.Select(test.scene, test.Struct)
+			}else if version==2{
+				jsonFilter = filter.SelectCache(test.scene, test.Struct)
+			}
 		} else {
-			jsonFilter = filter.Omit(test.scene, test.Struct)
+			if version == 1 {
+				jsonFilter = filter.Omit(test.scene, test.Struct)
+			}else if version==2{
+				jsonFilter = filter.OmitCache(test.scene, test.Struct)
+			}
 		}
 		jsonFilterStr, err := json.Marshal(jsonFilter)
 		if err != nil {
@@ -45,8 +62,9 @@ func TestAll(t *testing.T) {
 			fmt.Printf("共测试%v个case", i)
 		}
 	}
-
 }
+
+
 func getTestArrayCase() []testCase {
 	return []testCase{
 		{
