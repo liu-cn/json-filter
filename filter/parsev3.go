@@ -1,40 +1,13 @@
 package filter
 
 import (
-	"fmt"
+	"encoding"
 	"reflect"
+	"fmt"
 )
 
-var fieldCacheVar fieldCache
 
-func init() {
-	fieldCacheVar.filterFieldMap = make(map[string]*field)
-}
-
-type fieldCache struct {
-	filterFieldMap map[string]*field
-}
-type field struct {
-	index        int //该字段所处结构体的索引位置
-	tag          tag
-	selectFields []*field
-}
-
-func newField(t tag, idx int) field {
-	return field{
-		tag:   t,
-		index: idx,
-	}
-}
-
-func getCacheKey(pkgInfo string, scene string, isSelect bool) string {
-	mode := ".select"
-	if !isSelect {
-		mode = ".omit"
-	}
-	return pkgInfo + "." + scene + mode
-}
-func (t *fieldNodeTree) parseAny2(key, scene string, valueOf reflect.Value, isSelect bool) {
+func (t *fieldNodeTree) parseAny_V3(key, scene string, valueOf reflect.Value, isSelect bool) {
 	typeOf := valueOf.Type()
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
@@ -48,55 +21,125 @@ TakePointerValue: //取指针的值
 			typeOf = valueOf.Type()
 			goto TakePointerValue
 		} else {
-			t.parserNilInterface()
+			parserNilInterfaceV3(t, key)
 		}
+
 	case reflect.Struct:
-		t.parserStructCache(typeOf, valueOf)
+		
+		parserStructV3(typeOf, valueOf, t, scene, key, isSelect)
 	case reflect.Bool,
 		reflect.String,
 		reflect.Float64, reflect.Float32,
 		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		t.parserBaseType(valueOf)
+		parserBaseTypeV3(valueOf, t, key)
 	case reflect.Map:
-		parserMap(valueOf, t, scene, isSelect)
+		parserMapV3(valueOf, t, scene, isSelect)
 	case reflect.Slice, reflect.Array:
-		parserSliceOrArray(typeOf, valueOf, t, scene, key, isSelect)
+		parserSliceOrArrayV3(typeOf, valueOf, t, scene, key, isSelect)
 	}
 
 }
 
-func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.Value) {
+func parserNilInterfaceV3(t *fieldNodeTree, key string) {
+	if t.IsAnonymous {
+		tree := &fieldNodeTree{
+			Key:        t.Key,
+			ParentNode: t,
+			Val:        t.Val,
+			IsNil:      true,
+		}
+		t.AnonymousAddChild(tree)
+	} else {
+		t.Val = nil
+		t.Key = key
+		t.IsNil = true
+	}
+}
+
+
+func parserMapV3(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect bool) {
+	keys := valueOf.MapKeys()
+	if len(keys) == 0 { //空map情况下解析为{}
+		t.Val = struct{}{}
+		return
+	}
+	for i := 0; i < len(keys); i++ {
+		mapIsNil := false
+		val := valueOf.MapIndex(keys[i])
+	takeValMap:
+		if val.Kind() == reflect.Ptr {
+			if val.IsNil() {
+				mapIsNil = true
+				continue
+			} else {
+				val = val.Elem()
+				goto takeValMap
+			}
+		}
+		k := keys[i].String()
+		nodeTree := &fieldNodeTree{
+			Key:        k,
+			ParentNode: t,
+		}
+		if mapIsNil {
+			nodeTree.IsNil = true
+			t.AddChild(nodeTree)
+		} else {
+			// nodeTree.parseAny(k, scene, val, isSelect)
+			nodeTree.parseAny_V3(k,scene,val,isSelect)
+			t.AddChild(nodeTree)
+		}
+	}
+}
+
+func parserBaseTypeV3(valueOf reflect.Value, t *fieldNodeTree, key string) {
+
+	if t.IsAnonymous {
+		tree := &fieldNodeTree{
+			Key:        t.Key,
+			ParentNode: t,
+			Val:        t.Val,
+		}
+		t.AnonymousAddChild(tree)
+	} else {
+		t.Val = valueOf.Interface()
+		t.Key = key
+	}
+}
+
+func parserStructV3(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
 	if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
-		//t.Key = key
+		t.Key = key
 		t.Val = valueOf.Interface()
 		return
 	}
 	if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
-		//t.Key = key
+		t.Key = key
 		t.Val = struct{}{}
 		return
 	}
-	pkgInfo:=typeOf.PkgPath()
+	pkgInfo := typeOf.PkgPath() + "." + typeOf.Name()
 	if pkgInfo==""{
-		if t.kind==reflect.Array {
-			pkgInfo="array"
-		}else if t.kind==reflect.Slice{
-			pkgInfo="slice"
-		}else if t.kind==reflect.Map{
-			pkgInfo="map"
-		}
+		fmt.Println("-----------------------------------------")
+		// if t.kind==reflect.Array {
+		// 	pkgInfo="array"
+		// }else if t.kind==reflect.Slice{
+		// 	pkgInfo="slice"
+		// }else if t.kind==reflect.Map{
+		// 	pkgInfo="map"
+		// }
 	}
 	// if t.scene==""{
 	// 	fmt.Printf("%+v",t)
 	// }
-	cacheKey := getCacheKey(pkgInfo, t.scene, t.isSelect)
-	fmt.Println("pkg:",cacheKey)
+	cacheKey := getCacheKey(pkgInfo, scene, isSelect)
+	// fmt.Println("pkg:",cacheKey)
 	cacheField, ok := fieldCacheVar.filterFieldMap[cacheKey]
 
 	//说明缓存中不存在该字段的过滤信息
 	if !ok {
-		fmt.Println("缓存未命中")
+		// fmt.Println("缓存未命中")
 		var parentField *field
 		//如果是最外层的结构
 		if t.isRoot {
@@ -114,13 +157,13 @@ func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.V
 			
 			//tagInfo = getSelectTag(scene, pkgInfo, i, typeOf)
 			if t.isSelect {
-				tagInfo = getFieldSelectTag(fieldType, t.scene)
+				tagInfo = getFieldSelectTag(fieldType, scene)
 				
 			}else{
-				tagInfo = getFieldOmitTag(fieldType, t.scene)
-				fmt.Printf("%+v",tagInfo.tag)
+				tagInfo = getFieldOmitTag(fieldType, scene)
+				// fmt.Printf("%+v",tagInfo.tag)
 			}
-
+			
 			if tagInfo.omit {
 				continue
 			}
@@ -128,11 +171,13 @@ func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.V
 			if fieldTag.IsOmitField || !fieldTag.IsSelect {
 				continue
 			}
+			// key=fieldTag.UseFieldName
 			isAnonymous := fieldType.Anonymous && fieldTag.IsAnonymous
 			fieldTag.IsAnonymous = isAnonymous
 
 			//能执行到这一步，说明该字段没被过滤掉，所以缓存应该缓存此字段信息。
 			cacheFieldEl := newField(fieldTag, i)
+			// fmt.Printf("---------%+v:%v",fieldTag,cacheKey)
 			fieldEl, ok1 := fieldCacheVar.filterFieldMap[cacheKey]
 			if ok1 {
 				//在该父节点的过滤列表里添加此字段
@@ -140,17 +185,17 @@ func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.V
 				//fieldCacheVar.filterFieldMap[cacheKey].selectFields = append(fieldCacheVar.filterFieldMap[cacheKey].selectFields, &fieldCache)
 			}
 
-			treeNode := t.newNode(fieldTag.UseFieldName)
-			treeNode.IsAnonymous = isAnonymous
-			treeNode.fieldCache = &cacheFieldEl
-			treeNode.Tag = fieldTag
-			//tree := &fieldNodeTree{
-			//	Key:         fieldTag.UseFieldName,
-			//	ParentNode:  t,
-			//	IsAnonymous: isAnonymous,
-			//	Tag:         fieldTag,
-			//	fieldCache:  &cacheFieldEl,
-			//}
+			// treeNode := t.newNode(fieldTag.UseFieldName)
+			// treeNode.IsAnonymous = isAnonymous
+			// treeNode.fieldCache = &cacheFieldEl
+			// treeNode.Tag = fieldTag
+			treeNode := &fieldNodeTree{
+				Key:         fieldTag.UseFieldName,
+				ParentNode:  t,
+				IsAnonymous: isAnonymous,
+				Tag:         fieldTag,
+				fieldCache:  &cacheFieldEl,
+			}
 			value := valueOf.Field(i)
 			if fieldTag.Function != "" {
 				function := valueOf.MethodByName(fieldTag.Function)
@@ -188,9 +233,7 @@ func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.V
 					}
 				}
 			}
-
-			treeNode.parseAnyV3(value)
-
+			treeNode.parseAny_V3(fieldTag.UseFieldName,scene,value,isSelect)
 			if t.IsAnonymous {
 				t.AnonymousAddChild(treeNode)
 			} else {
@@ -198,19 +241,19 @@ func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.V
 			}
 		}
 	} else { //说明缓存取到
-		fmt.Println("缓存命中")
+		// fmt.Printf("缓存命中:%v\n",cacheKey)
+		// fmt.Printf("%+v",cacheField)
 		for i := 0; i < len(cacheField.selectFields); i++ {
 			fieldInfo := cacheField.selectFields[i]
 			tag := fieldInfo.tag
-
-			tree := t.newNode(tag.UseFieldName)
-			// tree = &fieldNodeTree{
-			// 	Key:         tag.UseFieldName,
-			// 	ParentNode:  t,
-			// 	IsAnonymous: tag.IsAnonymous,
-			// 	Tag:         tag,
-			// 	fieldCache:  fieldInfo,
-			// }
+			// tree := t.newNode(tag.UseFieldName)
+			tree := &fieldNodeTree{
+				Key:         tag.UseFieldName,
+				ParentNode:  t,
+				IsAnonymous: tag.IsAnonymous,
+				Tag:         tag,
+				fieldCache:  fieldInfo,
+			}
 			value := valueOf.Field(fieldInfo.index)
 			if tag.Function != "" {
 				function := valueOf.MethodByName(tag.Function)
@@ -249,8 +292,8 @@ func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.V
 				}
 			}
 
-			tree.parseAnyV3(value)
-
+			// tree.parseAnyV3(value)
+			tree.parseAny_V3(tag.UseFieldName,scene,value,isSelect)
 			if t.IsAnonymous {
 				t.AnonymousAddChild(tree)
 			} else {
@@ -262,5 +305,71 @@ func (t *fieldNodeTree) parserStructCache(typeOf reflect.Type, valueOf reflect.V
 	if t.Children == nil && !t.IsAnonymous {
 		t.Val = struct{}{} //这样表示返回{}
 	}
+
+}
+
+func parserSliceOrArrayV3(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
+	val1 := valueOf.Interface()
+	ok := valueOf.CanConvert(byteTypes)
+	if ok {
+		t.Key = key
+		t.Val = val1
+		return
+	}
+
+	if typeOf.Kind() == reflect.Array {
+		uid, ok := val1.(encoding.TextMarshaler)
+		if ok {
+			t.Key = key
+			t.Val = uid
+			return
+		}
+	}
+
+	l := valueOf.Len()
+	if l == 0 {
+		t.Val = emptySlice
+		return
+	}
+
+	t.IsSlice = true
+	for i := 0; i < l; i++ {
+		sliceIsNil := false
+		node := &fieldNodeTree{
+			Key:        "",
+			ParentNode: t,
+		}
+		val := valueOf.Index(i)
+	takeValSlice:
+		if val.Kind() == reflect.Ptr {
+			if val.IsNil() {
+				sliceIsNil = true
+				continue
+			} else {
+				val = val.Elem()
+				goto takeValSlice
+			}
+		}
+
+		if sliceIsNil {
+			node.IsNil = true
+			t.AddChild(node)
+		} else {
+			node.parseAny_V3("",scene,val,isSelect)
+			// node.parseAny("", scene, val, isSelect)
+			t.AddChild(node)
+		}
+	}
+}
+
+func EchoCache(){
+
+for k, v := range fieldCacheVar.filterFieldMap {
+	fmt.Println("k",k)
+	fmt.Println("kv",v.selectFields)
+	// for _, v := range v.selectFields {
+	// 	fmt.Println()
+	// }
+}
 
 }

@@ -2,11 +2,19 @@ package filter
 
 import (
 	"encoding"
+	"fmt"
 	"reflect"
 )
 
-func (t *fieldNodeTree) parseAny3(valueOf reflect.Value) {
+func (t *fieldNodeTree) parseAnyV3(valueOf reflect.Value) {
 	typeOf := valueOf.Type()
+	// t.kind=typeOf.kind()
+	t.kind=typeOf.Kind()
+	if t.isRoot {
+		t.rootKind=typeOf.Kind()
+	}
+
+	fmt.Println("kind;",t.kind)
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Ptr: //如果是指针类型则取值重新判断类型
@@ -25,7 +33,8 @@ TakePointerValue: //取指针的值
 
 	case reflect.Struct:
 		//parserStruct(typeOf, valueOf, t, t.scene, key, t.isSelect)
-		t.parserStruct(typeOf, valueOf)
+		// t.parserStruct(typeOf, valueOf)
+		t.parserStructCache(typeOf,valueOf)
 	case reflect.Bool,
 		reflect.String,
 		reflect.Float64, reflect.Float32,
@@ -87,6 +96,7 @@ func (t *fieldNodeTree) parserMap(valueOf reflect.Value) {
 	for i := 0; i < len(keys); i++ {
 		mapIsNil := false
 		val := valueOf.MapIndex(keys[i])
+
 	takeValMap:
 		if val.Kind() == reflect.Ptr {
 			if val.IsNil() {
@@ -98,15 +108,18 @@ func (t *fieldNodeTree) parserMap(valueOf reflect.Value) {
 			}
 		}
 		k := keys[i].String()
-		nodeTree := &fieldNodeTree{
-			Key:        k,
-			ParentNode: t,
-		}
+		// nodeTree := &fieldNodeTree{
+		// 	Key:        k,
+		// 	ParentNode: t,
+		// }
+		nodeTree:=t.newNode(k)
+
 		if mapIsNil {
 			nodeTree.IsNil = true
 			t.AddChild(nodeTree)
 		} else {
-			nodeTree.parseAny(k, t.scene, val, t.isSelect)
+			// nodeTree.parseAny(k, t.scene, val, t.isSelect)
+			nodeTree.parseAnyV3(val)
 			t.AddChild(nodeTree)
 		}
 	}
@@ -156,13 +169,15 @@ func (t *fieldNodeTree) parserStruct(typeOf reflect.Type, valueOf reflect.Value)
 		}
 		isAnonymous := typeOf.Field(i).Anonymous && tag.IsAnonymous ////什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
 
-		tree := &fieldNodeTree{
-			isSelect:    t.isSelect,
-			scene:       t.scene,
-			Key:         tag.UseFieldName,
-			ParentNode:  t,
-			IsAnonymous: isAnonymous,
-		}
+		tree:=t.newNode(tag.UseFieldName)
+		tree.IsAnonymous=isAnonymous
+		// tree := &fieldNodeTree{
+		// 	isSelect:    t.isSelect,
+		// 	scene:       t.scene,
+		// 	Key:         tag.UseFieldName,
+		// 	ParentNode:  t,
+		// 	IsAnonymous: isAnonymous,
+		// }
 		value := valueOf.Field(i)
 		if tag.Function != "" {
 			function := valueOf.MethodByName(tag.Function)
@@ -201,8 +216,8 @@ func (t *fieldNodeTree) parserStruct(typeOf reflect.Type, valueOf reflect.Value)
 			}
 		}
 
-		tree.parseAny(tag.UseFieldName, t.scene, value, t.isSelect)
-
+		// tree.parseAny(tag.UseFieldName, t.scene, value, t.isSelect)
+		tree.parseAnyV3(value)
 		if t.IsAnonymous {
 			t.AnonymousAddChild(tree)
 		} else {
@@ -245,9 +260,12 @@ func (t *fieldNodeTree) parserSliceOrArray(typeOf reflect.Type, valueOf reflect.
 	t.IsSlice = true
 	for i := 0; i < l; i++ {
 		sliceIsNil := false
+
+		// node :=t.newNode("")
 		node := &fieldNodeTree{
 			Key:        "",
 			ParentNode: t,
+			scene: t.scene,
 		}
 		val := valueOf.Index(i)
 	takeValSlice:
@@ -265,7 +283,7 @@ func (t *fieldNodeTree) parserSliceOrArray(typeOf reflect.Type, valueOf reflect.
 			node.IsNil = true
 			t.AddChild(node)
 		} else {
-			node.parseAny3(val)
+			node.parseAnyV3(val)
 			t.AddChild(node)
 		}
 	}
