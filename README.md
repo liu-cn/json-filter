@@ -6,7 +6,7 @@
 
 ​        [English](#English)
 
-感谢JetBrains 对该开源项目的支持，该项目使用JetBrains 赞助的Goland进行开发，该项目已经通过JetBrains 的开源项目认证,
+**感谢JetBrains 对该开源项目的支持，该项目使用JetBrains 赞助的Goland进行开发，该项目已经通过JetBrains 的开源项目认证,**
 
 [https://www.jetbrains.com/]: <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo" style="zoom: 25%;" />
 
