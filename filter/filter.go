@@ -137,7 +137,6 @@ func jsonFilterCache(selectScene string, el interface{}, isSelect bool) Filter {
 		ParentNode: nil,
 	}
 	tree.parseAnyV2("", selectScene, reflect.ValueOf(el), isSelect)
-	// tree.parseAny2("",selectScene,reflect.ValueOf(el),isSelect)
 	return Filter{
 		node: tree,
 	}
