@@ -9,9 +9,9 @@ import (
 
 func TestSlice(t *testing.T) {
 	type Tag struct {
-		ID   uint   `json:"id,select(all)"`
-		Name string `json:"name,select(justName|all)"`
-		Icon string `json:"icon,select(chat|profile|all)"`
+		ID   uint   `json:"id,select(all),omit(id)"`
+		Name string `json:"name,select(justName|all),omit(name)"`
+		Icon string `json:"icon,select(chat|profile|all),omit(icon)"`
 	}
 
 	tags := []Tag{ //切片和数组都支持 slice or array
@@ -40,4 +40,12 @@ func TestSlice(t *testing.T) {
 
 	fmt.Println(filter.Select("chat", tags))
 	//--->输出结果： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
+
+	fmt.Println(filter.Omit("id", tags))
+	//[{"icon":"icon-c","name":"c"},{"icon":"icon-c++","name":"c++"},{"icon":"icon-go","name":"go"}]
+	fmt.Println(filter.Omit("name", tags))
+	//[{"icon":"icon-c","id":1},{"icon":"icon-c++","id":1},{"icon":"icon-go","id":1}]
+	fmt.Println(filter.Omit("icon", tags))
+	//[{"id":1,"name":"c"},{"id":1,"name":"c++"},{"id":1,"name":"go"}]
+
 }

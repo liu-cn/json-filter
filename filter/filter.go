@@ -10,24 +10,24 @@ type Filter struct {
 	node *fieldNodeTree
 }
 
-// Select 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+// Select 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示，详解请看：https://github.com/liu-cn/json-filter/blob/main/example/select_simple.go
 func Select(selectScene string, el interface{}) interface{} {
 	return jsonFilter(selectScene, el, true)
 }
 
-func jsonFilter(selectScene string, el interface{}, isSelect bool) Filter {
+func jsonFilter(scene string, el interface{}, isSelect bool) Filter {
 	tree := &fieldNodeTree{
 		Key:        "",
 		isRoot:     true,
 		ParentNode: nil,
 	}
-	tree.parseAny("", selectScene, reflect.ValueOf(el), isSelect)
+	tree.parseAny("", scene, reflect.ValueOf(el), isSelect)
 	return Filter{
 		node: tree,
 	}
 }
 
-// Omit 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+// Omit 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示, 详解请看：https://github.com/liu-cn/json-filter/blob/main/example/omit_simple_test.go
 func Omit(omitScene string, el interface{}) interface{} {
 	return jsonFilter(omitScene, el, false)
 }
@@ -112,7 +112,7 @@ func jsonFilterCache(selectScene string, el interface{}, isSelect bool) Filter {
 		isRoot:     true,
 		ParentNode: nil,
 	}
-	tree.parseAny_V3("",selectScene,reflect.ValueOf(el),isSelect)
+	tree.parseAny_2("", selectScene, reflect.ValueOf(el), isSelect)
 	// tree.parseAny2("",selectScene,reflect.ValueOf(el),isSelect)
 	return Filter{
 		node: tree,

@@ -6,21 +6,27 @@
 
 ​        [English](#English)
 
+## 特别鸣谢
+**感谢 JetBrains公司对该开源项目的支持，此项目使用JetBrains赞助的Goland进行开发，并且该项目已经通过JetBrains 的开源项目认证**
 
-
-感谢JetBrains 对该开源项目的支持，该项目使用JetBrains 赞助的Goland进行开发，该项目已经通过JetBrains 的开源项目认证,
-
-[https://www.jetbrains.com/]: <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo" style="zoom: 25%;" />
-
-
-
-<img title="" src="https://github.com/liu-cn/json-filter/blob/main/logo.png" alt="" data-align="center">
+<p align="center">
+    <a target="_blank" style="text-decoration:none;color: black;" href="https://www.jetbrains.com/"> 
+        JetBrains官网：<img alt="JetBrains Logo" height="70" src="https://img-blog.csdnimg.cn/56894f3e87e343f089dde842de52e4e0.png" title="JetBrains官网"/>
+    </a>
+    <a target="_blank" style="text-decoration:none;color: black;"  href="https://www.jetbrains.com/go/download/#"> 
+        GoLand：<img title="" height="60" src="https://img-blog.csdnimg.cn/b3e0d4b55d8c4a118625fc2562e20720.png" alt="" data-align="center">
+    </a>
+    <a target="_blank" style="text-decoration:none;color: black;"  href="https://img-blog.csdnimg.cn/d1c2fa3034b2479da192462ee11ba9b2.jpeg"> 
+        开源认证：<img title="" height="60" src="https://img-blog.csdnimg.cn/6abf3ffdf56949998d14d12b5fa5fc07.png" alt="" data-align="center">
+    </a>
+</p>
+<img title="" src="https://img-blog.csdnimg.cn/145ba7eeb6614e4c987d0e5d2b2a18a2.png" alt="" data-align="center">
 
 ## English
 
 # future
 
-    1.重写缓存策略（已实现但是还没完全测试，性能有很大提升，在filter/cache.go 文件中）
+    1.重写缓存策略（已实现但是还没完全测试，性能有很大提升，在filter_field_cache 分支下）
     2.内置json编码功能，消除对官方json编码工具的依赖（同时还可以提升性能），在过滤的同时编码。
     3.提升反射性能
 

@@ -20,13 +20,13 @@ func TestAll(t *testing.T) {
 	//添加所有测试用例
 	tests = append(tests, getTestArrayCase()...)
 	tests = append(tests, getTestCase()...)
-	t.Run("v1",func(t *testing.T) {
-		runTestAll(tests, t,1)
-		runTestAll(tests, t,1)
+	t.Run("v1", func(t *testing.T) {
+		runTestAll(tests, t, 1)
+		runTestAll(tests, t, 1)
 	})
-	t.Run("v2",func(t *testing.T) {
-		runTestAll(tests,t,2)
-		runTestAll(tests,t,2)
+	t.Run("v2", func(t *testing.T) {
+		runTestAll(tests, t, 2)
+		runTestAll(tests, t, 2)
 	})
 	filter.EchoCache()
 }
@@ -37,13 +37,13 @@ func runTestAll(tests []testCase, t *testing.T, version int) {
 		if test.isSelect {
 			if version == 1 {
 				jsonFilter = filter.Select(test.scene, test.Struct)
-			}else if version==2{
+			} else if version == 2 {
 				jsonFilter = filter.SelectCache(test.scene, test.Struct)
 			}
 		} else {
 			if version == 1 {
 				jsonFilter = filter.Omit(test.scene, test.Struct)
-			}else if version==2{
+			} else if version == 2 {
 				jsonFilter = filter.OmitCache(test.scene, test.Struct)
 			}
 		}
@@ -63,7 +63,6 @@ func runTestAll(tests []testCase, t *testing.T, version int) {
 		}
 	}
 }
-
 
 func getTestArrayCase() []testCase {
 	return []testCase{
@@ -207,6 +206,36 @@ func getTestCase() []testCase {
 			}{
 				A: "",
 			},
+		}, {
+			isSelect: true,
+			scene:    "justName",
+			want:     `[{"name":"c"},{"name":"c++"},{"name":"go"}]`,
+			Struct:   newTags(),
+		}, {
+			isSelect: true,
+			scene:    "all",
+			want:     `[{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]`,
+			Struct:   newTags(),
+		}, {
+			isSelect: true,
+			scene:    "chat",
+			want:     `[{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]`,
+			Struct:   newTags(),
+		}, {
+			isSelect: false,
+			scene:    "id",
+			want:     `[{"icon":"icon-c","name":"c"},{"icon":"icon-c++","name":"c++"},{"icon":"icon-go","name":"go"}]`,
+			Struct:   newTags(),
+		}, {
+			isSelect: false,
+			scene:    "name",
+			want:     `[{"icon":"icon-c","id":1},{"icon":"icon-c++","id":1},{"icon":"icon-go","id":1}]`,
+			Struct:   newTags(),
+		}, {
+			isSelect: false,
+			scene:    "icon",
+			want:     `[{"id":1,"name":"c"},{"id":1,"name":"c++"},{"id":1,"name":"go"}]`,
+			Struct:   newTags(),
 		},
 	}
 }
