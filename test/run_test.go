@@ -28,7 +28,6 @@ func TestAll(t *testing.T) {
 		runTestAll(tests, t, 2)
 		runTestAll(tests, t, 2)
 	})
-	filter.EchoCache()
 }
 
 func runTestAll(tests []testCase, t *testing.T, version int) {
@@ -236,6 +235,26 @@ func getTestCase() []testCase {
 			scene:    "icon",
 			want:     `[{"id":1,"name":"c"},{"id":1,"name":"c++"},{"id":1,"name":"go"}]`,
 			Struct:   newTags(),
+		}, {
+			isSelect: true,
+			scene:    "Times",
+			want:     `{"birth_time":"2016-01-02 15:04:05","birth_time2":"2016-01-02 15:04:05","nil_birth_time":"0001-01-01 00:00:00","timer":"2016-01-02T15:04:05Z"}`,
+			Struct:   NewTimes(),
+		}, {
+			isSelect: false,
+			scene:    "Times",
+			want:     `{"birth_time2":"2016-01-02 15:04:05","nil_birth_time":"0001-01-01 00:00:00","timer":"2016-01-02T15:04:05Z"}`,
+			Struct:   NewTimes(),
+		}, {
+			isSelect: true,
+			scene:    "article",
+			want:     `{"pageInfo":999,"pageNum":1,"title":"c++从研发到脱发"}`,
+			Struct:   NewAnonymous(),
+		}, {
+			isSelect: false,
+			scene:    "Anonymous",
+			want:     `{"author":"北洛","pageNum":1}`,
+			Struct:   NewAnonymous(),
 		},
 	}
 }
