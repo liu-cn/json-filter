@@ -57,3 +57,31 @@ func newArray() *Array {
 	}
 	return arr
 }
+
+type Tags struct {
+	ID   uint   `json:"id,select(all),omit(id)"`
+	Name string `json:"name,select(justName|all),omit(name)"`
+	Icon string `json:"icon,select(chat|profile|all),omit(icon)"`
+}
+
+func newTags() []Tags {
+
+	tags := []Tags{ //切片和数组都支持 slice or array
+		{
+			ID:   1,
+			Name: "c",
+			Icon: "icon-c",
+		},
+		{
+			ID:   1,
+			Name: "c++",
+			Icon: "icon-c++",
+		},
+		{
+			ID:   1,
+			Name: "go",
+			Icon: "icon-go",
+		},
+	}
+	return tags
+}

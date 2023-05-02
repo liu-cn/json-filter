@@ -18,7 +18,7 @@ type Benchmark struct {
 
 	Hobby   string             `json:"hobby,omitempty,select($any)"`           //任何场景下为空忽略
 	Lang    []BenchmarkLangAge `json:"lang,omitempty,select(1),omit(article)"` //任何场景下为空忽略
-	Profile BenchmarkProfile   `json:"profile,select($any)"`
+	Profile BenchmarkProfile   `json:"profile,select(profile),omit(article)"`
 }
 
 type BenchmarkProfile struct {
@@ -61,12 +61,13 @@ func newUsers() Benchmark {
 }
 
 var str string
+var testScene = "profile"
 
 func BenchmarkOmitPointerWithCache(b *testing.B) {
 	user := newUsers()
 	filter.EnableCache(true)
 	for i := 0; i < b.N; i++ {
-		_ = filter.Omit("article", &user)
+		_ = filter.Omit(testScene, &user)
 	}
 }
 
@@ -74,7 +75,7 @@ func BenchmarkSelectPointerWithCache(b *testing.B) {
 	user := newUsers()
 	filter.EnableCache(true)
 	for i := 0; i < b.N; i++ {
-		_ = filter.Select("article", &user)
+		_ = filter.Select(testScene, &user)
 	}
 }
 
@@ -82,23 +83,38 @@ func BenchmarkOmitVal(b *testing.B) {
 	user := newUsers()
 	filter.EnableCache(false)
 	for i := 0; i < b.N; i++ {
-		_ = filter.Omit("article", user)
+		_ = filter.Omit(testScene, user)
 	}
 }
 func BenchmarkSelectVal(b *testing.B) {
 	user := newUsers()
 	filter.EnableCache(false)
 	for i := 0; i < b.N; i++ {
-		_ = filter.Select("article", user)
+		_ = filter.Select(testScene, user)
 	}
 }
-
+func BenchmarkOmitValV2(b *testing.B) {
+	user := newUsers()
+	filter.EnableCache(false)
+	for i := 0; i < b.N; i++ {
+		_ = filter.OmitCache(testScene, user)
+	}
+}
+func BenchmarkSelectValV2(b *testing.B) {
+	user := newUsers()
+	filter.EnableCache(false)
+	for i := 0; i < b.N; i++ {
+		_ = filter.SelectCache(testScene, user)
+	}
+}
 func BenchmarkAll(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.Run("BenchmarkOmitPointerWithCache", BenchmarkOmitPointerWithCache)
 		b.Run("BenchmarkOmitVal", BenchmarkOmitVal)
+		b.Run("BenchmarkOmitValV2", BenchmarkOmitValV2)
 		b.Run("BenchmarkSelectPointerWithCache", BenchmarkSelectPointerWithCache)
 		b.Run("BenchmarkSelectVal", BenchmarkSelectVal)
+		b.Run("BenchmarkSelectValV2", BenchmarkSelectValV2)
 	}
 }
 

@@ -41,23 +41,10 @@ func (u *Us) GetAvatar2() string {
 
 func main() {
 
-	//var bb = []byte(`{"a":"1"}`)
-	//u := Us{
-	//	BB:         [3]byte{1, 2, 4},
-	//	EmptySlice: make([]string, 0, 1),
-	//	B:          []byte(`{"a":"1"}`),
-	//	UID:        UID{1, 3, 4},
-	//	UIDs:       UIDs{1, 23, 55},
-	//	Avatar:     []byte("uuid"),
-	//	Avatar2:    []byte("uuid2"),
-	//}
-	//list := []Us{u, u, u}
-	//fmt.Println(filter.Omit("1", &list))
-	//fmt.Println(mustJson(u))
+	user := NewUser()
 
-	for i := 0; i < 3; i++ {
-		ExampleOmit()
-	}
+	cache := filter.SelectCache("lang", user)
+	fmt.Println(cache)
 }
 
 func ExampleOmit() {
