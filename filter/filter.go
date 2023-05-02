@@ -84,8 +84,7 @@ func (f Filter) String() string {
 	return json
 }
 
-// EqualJSON 判断两个json字符串是否等价（有相同的键值，不同的顺序）
-func EqualJSON(jsonStr1, jsonStr2 string) (bool, error) {
+func equalJSON(jsonStr1, jsonStr2 string) (bool, error) {
 	var i interface{}
 	var i2 interface{}
 	err := json.Unmarshal([]byte(jsonStr1), &i)
@@ -97,6 +96,31 @@ func EqualJSON(jsonStr1, jsonStr2 string) (bool, error) {
 		return false, err
 	}
 	return reflect.DeepEqual(i, i2), nil
+}
+
+// EqualJSON 判断两个或者多个json字符串是否等价（有相同的键值，不同的顺序）
+func EqualJSON(jsonStr1, jsonStr2 string, moreJson ...string) (bool, error) {
+	if len(moreJson) == 0 {
+		return equalJSON(jsonStr1, jsonStr2)
+	}
+	equal, err := equalJSON(jsonStr1, jsonStr2)
+	if err != nil {
+		return false, err
+	}
+	if !equal {
+		return false, nil
+	}
+	for _, js := range moreJson {
+		eq, err := equalJSON(jsonStr1, js)
+		if err != nil {
+			return false, err
+		}
+		if !eq {
+			return false, err
+		}
+	}
+	return true, nil
+
 }
 
 // SelectCache 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
@@ -112,7 +136,7 @@ func jsonFilterCache(selectScene string, el interface{}, isSelect bool) Filter {
 		isRoot:     true,
 		ParentNode: nil,
 	}
-	tree.parseAny_2("", selectScene, reflect.ValueOf(el), isSelect)
+	tree.parseAnyV2("", selectScene, reflect.ValueOf(el), isSelect)
 	// tree.parseAny2("",selectScene,reflect.ValueOf(el),isSelect)
 	return Filter{
 		node: tree,

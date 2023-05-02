@@ -59,63 +59,6 @@ func parserNilInterface(t *fieldNodeTree, key string) {
 	}
 }
 
-func getFieldOmitTag(field reflect.StructField, scene string) tagInfo {
-	tagInfoEl := tagInfo{}
-	//没开缓存就获取tag
-	jsonTag, ok := field.Tag.Lookup("json")
-	var tag tag
-	if !ok {
-		tag = newOmitNotTag(scene, field.Name)
-	} else {
-		if jsonTag == "-" {
-			tagInfoEl.omit = true
-			return tagInfoEl
-		}
-		tag = newOmitTag(jsonTag, scene, field.Name)
-	}
-	tagInfoEl.tag = tag
-	return tagInfoEl
-}
-func getFieldSelectTag(field reflect.StructField, scene string) tagInfo {
-	tagInfoEl := tagInfo{}
-	//没开缓存就获取tag
-	jsonTag, ok := field.Tag.Lookup("json")
-	var t tag
-	if !ok {
-		tagInfoEl.omit = true
-		return tagInfoEl
-	} else {
-		if jsonTag == "-" {
-			tagInfoEl.omit = true
-			return tagInfoEl
-		}
-		t = newSelectTag(jsonTag, scene, field.Name)
-	}
-	tagInfoEl.tag = t
-	return tagInfoEl
-}
-func getOmitTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagInfo {
-	//omitTag := tagInfo{}
-
-	return getFieldOmitTag(typeOf.Field(i), scene)
-
-	//if !enableCache { //没开缓存就获取tag
-	//	omitTag = getFieldOmitTag(typeOf.Field(i), scene)
-	//	return omitTag
-	//}
-	//fieldName := typeOf.Field(i).Name
-	//cacheKey := tagCache.key(pkgInfo, scene, fieldName, false)
-	//tagEl, exist := tagCache.fields[cacheKey]
-	//if !exist { //如果缓存里没取到
-	//	omitTag = getFieldOmitTag(typeOf.Field(i), scene)
-	//	tagCache.fields[cacheKey] = omitTag.tag
-	//	return omitTag
-	//}
-	//omitTag.tag = tagEl
-	//
-	//return omitTag
-}
-
 //func getSelectTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagInfo {
 //	selectTag := tagInfo{}
 //
@@ -134,25 +77,6 @@ func getOmitTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagInf
 //	selectTag.tag = tagEl
 //	return selectTag
 //}
-
-func getSelectTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagInfo {
-	//selectTag := tagInfo{}
-	return getFieldSelectTag(typeOf.Field(i), scene)
-	//if !enableCache {
-	//	return getFieldSelectTag(typeOf.Field(i), scene)
-	//}
-	//
-	//fieldName := typeOf.Field(i).Name
-	//cacheKey := tagCache.key(pkgInfo, scene, fieldName, true)
-	//tagEl, exist := tagCache.fields[cacheKey]
-	//if !exist { //如果缓存里没取到
-	//	selectTag = getFieldSelectTag(typeOf.Field(i), scene)
-	//	tagCache.fields[cacheKey] = selectTag.tag
-	//	return selectTag
-	//}
-	//selectTag.tag = tagEl
-	//return selectTag
-}
 
 func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect bool) {
 	keys := valueOf.MapKeys()
@@ -182,7 +106,42 @@ func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect b
 			nodeTree.IsNil = true
 			t.AddChild(nodeTree)
 		} else {
+			//nodeTree.parseAnyV2(k, scene, val, isSelect)
 			nodeTree.parseAny(k, scene, val, isSelect)
+			t.AddChild(nodeTree)
+		}
+	}
+}
+func parserMapV2(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect bool) {
+	keys := valueOf.MapKeys()
+	if len(keys) == 0 { //空map情况下解析为{}
+		t.Val = struct{}{}
+		return
+	}
+	for i := 0; i < len(keys); i++ {
+		mapIsNil := false
+		val := valueOf.MapIndex(keys[i])
+	takeValMap:
+		if val.Kind() == reflect.Ptr {
+			if val.IsNil() {
+				mapIsNil = true
+				continue
+			} else {
+				val = val.Elem()
+				goto takeValMap
+			}
+		}
+		k := keys[i].String()
+		nodeTree := &fieldNodeTree{
+			Key:        k,
+			ParentNode: t,
+		}
+		if mapIsNil {
+			nodeTree.IsNil = true
+			t.AddChild(nodeTree)
+		} else {
+			nodeTree.parseAnyV2(k, scene, val, isSelect)
+			//nodeTree.parseAny(k, scene, val, isSelect)
 			t.AddChild(nodeTree)
 		}
 	}
@@ -337,7 +296,60 @@ func parserSliceOrArray(typeOf reflect.Type, valueOf reflect.Value, t *fieldNode
 			t.AddChild(node)
 		} else {
 			node.parseAny("", scene, val, isSelect)
-			//node.parseAny_2("", scene, val, isSelect)
+			//node.parseAnyV2("", scene, val, isSelect)
+			t.AddChild(node)
+		}
+	}
+}
+func parserSliceOrArrayV2(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
+	val1 := valueOf.Interface()
+	ok := valueOf.CanConvert(byteTypes)
+	if ok {
+		t.Key = key
+		t.Val = val1
+		return
+	}
+
+	if typeOf.Kind() == reflect.Array {
+		uid, ok := val1.(encoding.TextMarshaler)
+		if ok {
+			t.Key = key
+			t.Val = uid
+			return
+		}
+	}
+
+	l := valueOf.Len()
+	if l == 0 {
+		t.Val = emptySlice
+		return
+	}
+
+	t.IsSlice = true
+	for i := 0; i < l; i++ {
+		sliceIsNil := false
+		node := &fieldNodeTree{
+			Key:        "",
+			ParentNode: t,
+		}
+		val := valueOf.Index(i)
+	takeValSlice:
+		if val.Kind() == reflect.Ptr {
+			if val.IsNil() {
+				sliceIsNil = true
+				continue
+			} else {
+				val = val.Elem()
+				goto takeValSlice
+			}
+		}
+
+		if sliceIsNil {
+			node.IsNil = true
+			t.AddChild(node)
+		} else {
+			//node.parseAny("", scene, val, isSelect)
+			node.parseAnyV2("", scene, val, isSelect)
 			t.AddChild(node)
 		}
 	}
