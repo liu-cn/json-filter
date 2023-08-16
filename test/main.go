@@ -55,9 +55,11 @@ func main() {
 	//fmt.Println(filter.Omit("1", &list))
 	//fmt.Println(mustJson(u))
 
-	for i := 0; i < 3; i++ {
-		ExampleOmit()
-	}
+	TestMap()
+	TestMap()
+	//for i := 0; i < 3; i++ {
+	//	ExampleOmit()
+	//}
 }
 
 func ExampleOmit() {

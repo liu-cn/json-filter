@@ -2,6 +2,7 @@ package filter
 
 import (
 	"encoding"
+	"fmt"
 	"reflect"
 )
 
@@ -133,6 +134,17 @@ func getSelectTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagI
 	return selectTag
 }
 
+// map的key为数值 bool 和字符串
+func isMapKey(t reflect.Value) string {
+	switch t.Kind() {
+	case reflect.String:
+		return t.String()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return fmt.Sprintf("%v", t.Interface())
+	default:
+		return ""
+	}
+}
 func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect bool) {
 	keys := valueOf.MapKeys()
 	if len(keys) == 0 { //空map情况下解析为{}
@@ -152,7 +164,12 @@ func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect b
 				goto takeValMap
 			}
 		}
-		k := keys[i].String()
+
+		key := isMapKey(keys[i])
+		if key == "" {
+			continue
+		}
+		k := key
 		nodeTree := &fieldNodeTree{
 			Key:        k,
 			ParentNode: t,
