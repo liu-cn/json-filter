@@ -2,6 +2,7 @@ package filter
 
 import (
 	"encoding"
+	"fmt"
 	"reflect"
 )
 
@@ -97,7 +98,12 @@ func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect b
 				goto takeValMap
 			}
 		}
-		k := keys[i].String()
+		//k := keys[i].String()
+		key := isMapKey(keys[i])
+		if key == "" {
+			continue
+		}
+		k := key
 		nodeTree := &fieldNodeTree{
 			Key:        k,
 			ParentNode: t,
@@ -110,6 +116,18 @@ func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect b
 			nodeTree.parseAny(k, scene, val, isSelect)
 			t.AddChild(nodeTree)
 		}
+	}
+}
+
+// map的key为数值 和字符串
+func isMapKey(t reflect.Value) string {
+	switch t.Kind() {
+	case reflect.String:
+		return t.String()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return fmt.Sprintf("%v", t.Interface())
+	default:
+		return ""
 	}
 }
 func parserMapV2(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect bool) {
@@ -131,7 +149,12 @@ func parserMapV2(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect
 				goto takeValMap
 			}
 		}
-		k := keys[i].String()
+		//k := keys[i].String()
+		key := isMapKey(keys[i])
+		if key == "" {
+			continue
+		}
+		k := key
 		nodeTree := &fieldNodeTree{
 			Key:        k,
 			ParentNode: t,
