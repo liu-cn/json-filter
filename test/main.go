@@ -54,9 +54,7 @@ func goOmit() {
 			Collect  int   `json:"-"`
 		}
 	)
-
 	articles := Articles{Like: 100, Collect: 20, Tags: []Tag{{"icon", "foo"}, {"icon", "bar"}}}
-
 	for i := 0; i < 100; i++ {
 		go func() {
 			fmt.Println(filter.Omit("article", &articles)) //尽量传指针，不传指针func选择器中的用指针接收的方法无法被调用
