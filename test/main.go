@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/liu-cn/json-filter/filter"
+	"time"
 )
 
 func mustJson(v interface{}) string {
@@ -39,8 +40,60 @@ func (u *Us) GetAvatar2() string {
 	return string(u.Avatar[:]) + ".jpg"
 }
 
+func goOmit() {
+	type (
+		Tag struct {
+			Icon string `json:"icon,omit(article)"`
+			Name string `json:"name,omit(profile)"`
+		}
+		Articles struct {
+			Password int   `json:"password,omit($any)"` //$any表示任何场景都排除该字段
+			Tags     []Tag `json:"tags"`
+			Hot      int   `json:"hot,select(img),func(GetHot)"` //热度 过滤时会调用GetHot方法获取该字段的值
+			Like     int   `json:"-"`
+			Collect  int   `json:"-"`
+		}
+	)
+
+	articles := Articles{Like: 100, Collect: 20, Tags: []Tag{{"icon", "foo"}, {"icon", "bar"}}}
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			fmt.Println(filter.Omit("article", &articles)) //尽量传指针，不传指针func选择器中的用指针接收的方法无法被调用
+		}()
+	}
+
+}
+func goSelect() {
+	type (
+		Tag struct {
+			Icon string `json:"icon,omit(article)"`
+			Name string `json:"name,omit(profile)"`
+		}
+		Articles struct {
+			Password int   `json:"password,omit($any)"` //$any表示任何场景都排除该字段
+			Tags     []Tag `json:"tags"`
+			Hot      int   `json:"hot,select(img),func(GetHot)"` //热度 过滤时会调用GetHot方法获取该字段的值
+			Like     int   `json:"-"`
+			Collect  int   `json:"-"`
+		}
+	)
+
+	articles := Articles{Like: 100, Collect: 20, Tags: []Tag{{"icon", "foo"}, {"icon", "bar"}}}
+
+	for i := 0; i < 10000; i++ {
+		go func() {
+			fmt.Println(filter.Select("article", &articles)) //尽量传指针，不传指针func选择器中的用指针接收的方法无法被调用
+		}()
+	}
+
+}
+
 func main() {
 
+	//goOmit()
+	goSelect()
+	time.Sleep(time.Second * 10)
 	//var bb = []byte(`{"a":"1"}`)
 	//u := Us{
 	//	BB:         [3]byte{1, 2, 4},
@@ -55,8 +108,8 @@ func main() {
 	//fmt.Println(filter.Omit("1", &list))
 	//fmt.Println(mustJson(u))
 
-	TestMap()
-	TestMap()
+	//TestMap()
+	//TestMap()
 	//for i := 0; i < 3; i++ {
 	//	ExampleOmit()
 	//}
