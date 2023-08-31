@@ -104,10 +104,12 @@ func getOmitTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagInf
 	}
 	fieldName := typeOf.Field(i).Name
 	cacheKey := tagCache.key(pkgInfo, scene, fieldName, false)
-	tagEl, exist := tagCache.fields[cacheKey]
+	//tagEl, exist := tagCache.fields[cacheKey]
+	tagEl, exist := tagCache.GetField(cacheKey)
 	if !exist { //如果缓存里没取到
 		omitTag = getFieldOmitTag(typeOf.Field(i), scene)
-		tagCache.fields[cacheKey] = omitTag.tag
+		//tagCache.fields[cacheKey] = omitTag.tag
+		tagCache.SetField(cacheKey, omitTag.tag)
 		return omitTag
 	}
 	omitTag.tag = tagEl
@@ -124,10 +126,11 @@ func getSelectTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagI
 
 	fieldName := typeOf.Field(i).Name
 	cacheKey := tagCache.key(pkgInfo, scene, fieldName, true)
-	tagEl, exist := tagCache.fields[cacheKey]
+	//tagEl, exist := tagCache.fields[cacheKey]
+	tagEl, exist := tagCache.GetField(cacheKey)
 	if !exist { //如果缓存里没取到
 		selectTag = getFieldSelectTag(typeOf.Field(i), scene)
-		tagCache.fields[cacheKey] = selectTag.tag
+		tagCache.SetField(cacheKey, selectTag.tag)
 		return selectTag
 	}
 	selectTag.tag = tagEl
