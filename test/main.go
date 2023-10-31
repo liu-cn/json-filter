@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/liu-cn/json-filter/filter"
-	"time"
 )
 
 func mustJson(v interface{}) string {
@@ -88,10 +87,13 @@ func goSelect() {
 }
 
 func main() {
-
+	//var testSlice = []int{}
+	var testSlice = []Article{}
+	j, _ := json.Marshal(filter.Select("t", testSlice))
+	fmt.Println(string(j))
 	//goOmit()
-	goSelect()
-	time.Sleep(time.Second * 10)
+	//goSelect()
+	//time.Sleep(time.Second * 10)
 	//var bb = []byte(`{"a":"1"}`)
 	//u := Us{
 	//	BB:         [3]byte{1, 2, 4},

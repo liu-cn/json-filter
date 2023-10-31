@@ -305,14 +305,13 @@ func parserSliceOrArray(typeOf reflect.Type, valueOf reflect.Value, t *fieldNode
 			return
 		}
 	}
-
+	t.IsSlice = true
 	l := valueOf.Len()
 	if l == 0 {
 		t.Val = emptySlice
 		return
 	}
 
-	t.IsSlice = true
 	for i := 0; i < l; i++ {
 		sliceIsNil := false
 		node := &fieldNodeTree{
