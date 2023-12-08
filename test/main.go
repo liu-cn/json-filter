@@ -86,11 +86,23 @@ func goSelect() {
 
 }
 
+type User struct {
+	user string
+	age  int
+
+	Lang Lang `json:"lang,select($any)"`
+}
+
+type Lang struct {
+	name [2]bool
+	Code string `json:"code,select($any)"`
+}
+
 func main() {
 	//var testSlice = []int{}
-	var testSlice = []Article{}
-	j, _ := json.Marshal(filter.Select("t", testSlice))
-	fmt.Println(string(j))
+	//var testSlice = []Article{}
+	//j, _ := json.Marshal(filter.Select("t", testSlice))
+	//fmt.Println(string(j))
 	//goOmit()
 	//goSelect()
 	//time.Sleep(time.Second * 10)
@@ -113,6 +125,16 @@ func main() {
 	//for i := 0; i < 3; i++ {
 	//	ExampleOmit()
 	//}
+
+	fmt.Println(filter.Omit("1", User{}))
+	fmt.Println(filter.Omit("1", User{}))
+	fmt.Println(filter.Omit("1", User{}))
+	fmt.Println(filter.Omit("1", User{}))
+	fmt.Println(filter.Omit("1", User{}))
+	fmt.Println(filter.Omit("1", User{}))
+	fmt.Println(filter.Omit("1", User{}))
+	fmt.Println(filter.Omit("1", User{}))
+
 }
 
 func ExampleOmit() {

@@ -13,6 +13,7 @@ type tagInfo struct {
 
 func (t *fieldNodeTree) parseAny(key, scene string, valueOf reflect.Value, isSelect bool) {
 	typeOf := valueOf.Type()
+
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Ptr: //如果是指针类型则取值重新判断类型
@@ -215,7 +216,9 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 	}
 	pkgInfo := typeOf.PkgPath() + "." + typeOf.Name()
 	for i := 0; i < typeOf.NumField(); i++ {
-
+		if !typeOf.Field(i).IsExported() { //跳过非导出字段
+			continue
+		}
 		var tagInfo tagInfo
 		tagInfo = getSelectTag(scene, pkgInfo, i, typeOf)
 		if !isSelect {
