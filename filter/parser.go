@@ -17,9 +17,13 @@ func (t *fieldNodeTree) parseAny(key, scene string, valueOf reflect.Value, isSel
 TakePointerValue: //取指针的值
 	switch typeOf.Kind() {
 	case reflect.Ptr: //如果是指针类型则取值重新判断类型
-		valueOf = valueOf.Elem()
-		typeOf = typeOf.Elem()
-		goto TakePointerValue
+		if !valueOf.IsNil() {
+			valueOf = valueOf.Elem()
+			typeOf = typeOf.Elem()
+			goto TakePointerValue
+		} else {
+			parserNilInterface(t, key)
+		}
 	case reflect.Interface:
 		if !valueOf.IsNil() {
 			valueOf = reflect.ValueOf(valueOf.Interface())
