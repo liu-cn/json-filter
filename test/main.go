@@ -126,14 +126,15 @@ func main() {
 	//	ExampleOmit()
 	//}
 
-	fmt.Println(filter.Omit("1", User{}))
-	fmt.Println(filter.Omit("1", User{}))
-	fmt.Println(filter.Omit("1", User{}))
-	fmt.Println(filter.Omit("1", User{}))
-	fmt.Println(filter.Omit("1", User{}))
-	fmt.Println(filter.Omit("1", User{}))
-	fmt.Println(filter.Omit("1", User{}))
-	fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	//fmt.Println(filter.Omit("1", User{}))
+	TestNilValue()
 
 }
 
