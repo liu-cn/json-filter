@@ -36,14 +36,12 @@ func EnableCache(enable bool) {
 	enableCache = enable
 }
 
-// Deprecated
-// SelectMarshal 不建议使用，第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。
+// SelectMarshal 跟Select方法等价，只是这个会返回具体对象，第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。
 func SelectMarshal(selectScene string, el interface{}) Filter {
 	return jsonFilter(selectScene, el, true)
 }
 
-// Deprecated
-// OmitMarshal 不建议使用，第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
+// OmitMarshal 跟Omit方法等价，只是这个会返回具体对象，第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
 func OmitMarshal(omitScene string, el interface{}) Filter {
 	return jsonFilter(omitScene, el, false)
 }
@@ -81,6 +79,23 @@ func (f Filter) String() string {
 		return fmt.Sprintf("Filter Err: %s", err.Error())
 	}
 	return json
+}
+
+// Map 过滤后的map结构
+func (f Filter) Map() map[string]interface{} {
+	return f.node.Map()
+}
+
+// Slice 过滤后的切片结构
+func (f Filter) Slice() []interface{} {
+	slices := make([]interface{}, 0, len(f.node.Children))
+	for i := 0; i < len(f.node.Children); i++ {
+		v, ok := f.node.Children[i].GetValue()
+		if ok {
+			slices = append(slices, v)
+		}
+	}
+	return slices
 }
 
 //// SelectCache 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
