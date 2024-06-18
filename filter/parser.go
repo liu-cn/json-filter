@@ -2,8 +2,10 @@ package filter
 
 import (
 	"encoding"
+	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type tagInfo struct {
@@ -244,7 +246,7 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 			IsAnonymous: isAnonymous,
 		}
 		value := valueOf.Field(i)
-		if tag.Function != "" {
+		if tag.Function != "" { //解析并调用func选择器
 			function := valueOf.MethodByName(tag.Function)
 			if !function.IsValid() {
 				if valueOf.CanAddr() {
@@ -281,6 +283,19 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 			}
 		}
 
+		valueInterface := value.Interface()
+		if v, ok := valueInterface.(json.Marshaler); ok {
+			if _, ok1 := value.Addr().Interface().(GTime); ok1 {
+				marshalJSON, err := v.MarshalJSON()
+				if err != nil {
+					fmt.Println("json marshal error:", err)
+				} else {
+					str := string(marshalJSON)
+					value = reflect.ValueOf(strings.Trim(str, `"`))
+				}
+			}
+
+		}
 		tree.parseAny(tag.UseFieldName, scene, value, isSelect)
 
 		if t.IsAnonymous {
