@@ -285,13 +285,15 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 
 		valueInterface := value.Interface()
 		if v, ok := valueInterface.(json.Marshaler); ok {
-			if _, ok1 := value.Addr().Interface().(GTime); ok1 {
-				marshalJSON, err := v.MarshalJSON()
-				if err != nil {
-					fmt.Println("json marshal error:", err)
-				} else {
-					str := string(marshalJSON)
-					value = reflect.ValueOf(strings.Trim(str, `"`))
+			if value.CanAddr() {
+				if _, ok1 := value.Addr().Interface().(GTime); ok1 {
+					marshalJSON, err := v.MarshalJSON()
+					if err != nil {
+						fmt.Println("json marshal error:", err)
+					} else {
+						str := string(marshalJSON)
+						value = reflect.ValueOf(strings.Trim(str, `"`))
+					}
 				}
 			}
 
