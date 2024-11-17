@@ -654,22 +654,12 @@ func main() {
         Price:      "999.9",
     }
 
-    marshal, err := json.Marshal(user)
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println(string(marshal)) //以下是官方的json解析输出结果：可以看到所有的字段都被解析了出来
-    //{"uid":1,"nickname":"boyan","avatar":"avatar","sex":1,"vip_end_time":"2023-03-06T23:11:22.622693+08:00","price":"999.9"}
-
-    //用法：filter.Select("select里的一个场景",这里可以是slice/array/struct/pointer/map)
-    article:=filter.Select("article", user)
-    articleBytes, _ := json.Marshal(article)
-    fmt.Println(string(articleBytes)) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
+    
+    //以下是通过json-filter 过滤后的json  用法：filter.Select("select里的一个场景",这里可以是slice/array/struct/pointer/map)
+    articleBytes, _ := json.Marshal(filter.Select("article", user))
+    fmt.Println(string(articleBytes)) 
     //{"avatar":"avatar","nickname":"boyan","uid":1}
 
-  //filter.Select fmt打印的时候会自动打印过滤后的json字符串
-    fmt.Println(filter.Select("article", user)) //以下是通过json-filter 过滤后的json，此输出是article接口下的json
-    //{"avatar":"avatar","nickname":"boyan","uid":1}
 
     fmt.Println(filter.Select("profile", user)) //profile接口下
     //{"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2023-03-06T23:31:28.636529+08:00"}
@@ -678,13 +668,53 @@ func main() {
 
 **注意！！下面还有更高级的过滤方式，建议把后面的文档看完。**
 
+
 ##### 做这个的原因
 
 不想暴露出其他不需要的字段，也不想重新建一个struct一个一个字段的赋值（懒）不过创建的model过多意味着维护的成本也会更高，
-返回更多字段在不安全的同时意味着需要传输更多的数据，这就意味着会浪费带宽资源，编解码也更加耗时，
-有时候我看到过有人为了偷懒把一个结构体序列化后返回，上面带着很多无用的字段，可能只有4-5个字段有用，
-其他大多数字段都没有用，不仅影响阅读还浪费带宽，所以或许可以尝试用json-filter的过滤器来过滤你想要的字段吧，
-不仅简单，更重要的是很强大，很复杂的结构体也可以过滤出你想要的字段。
+返回更多字段在不安全的同时意味着需要传输更多的数据，这就意味着会浪费带宽资源，编解码也更加耗时，还影响可读性
+
+##### 对于切片/数组的直接过滤
+
+是完全支持对数组和切片的直接过滤的。
+
+```go
+func main() {
+    type Tag struct {
+        ID   uint   `json:"id,select(all)"`
+        Name string `json:"name,select(justName|all)"`
+        Icon string `json:"icon,select(chat|profile|all)"`
+    }
+
+    tags := []Tag{   //切片和数组都支持
+        {
+            ID:   1,
+            Name: "c",
+            Icon: "icon-c",
+        },
+        {
+            ID:   1,
+            Name: "c++",
+            Icon: "icon-c++",
+        },
+        {
+            ID:   1,
+            Name: "go",
+            Icon: "icon-go",
+        },
+    }
+
+    fmt.Println(filter.Select("justName", tags))
+    //--->输出结果： [{"name":"c"},{"name":"c++"},{"name":"go"}]
+
+    fmt.Println(filter.Select("all", tags))
+    //--->输出结果： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
+
+    fmt.Println(filter.Select("chat", tags))
+    //--->输出结果： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
+
+}
+```
 
 #### 过滤方式
 
@@ -822,47 +852,7 @@ m := map[string]interface{}{
 //可以看到map也是可以直接过滤的。
 ```
 
-##### 对于切片/数组的直接过滤
 
-是完全支持对数组和切片的直接过滤的。
-
-```go
-func main() {
-    type Tag struct {
-        ID   uint   `json:"id,select(all)"`
-        Name string `json:"name,select(justName|all)"`
-        Icon string `json:"icon,select(chat|profile|all)"`
-    }
-
-    tags := []Tag{   //切片和数组都支持
-        {
-            ID:   1,
-            Name: "c",
-            Icon: "icon-c",
-        },
-        {
-            ID:   1,
-            Name: "c++",
-            Icon: "icon-c++",
-        },
-        {
-            ID:   1,
-            Name: "go",
-            Icon: "icon-go",
-        },
-    }
-
-    fmt.Println(filter.Select("justName", tags))
-    //--->输出结果： [{"name":"c"},{"name":"c++"},{"name":"go"}]
-
-    fmt.Println(filter.Select("all", tags))
-    //--->输出结果： [{"icon":"icon-c","id":1,"name":"c"},{"icon":"icon-c++","id":1,"name":"c++"},{"icon":"icon-go","id":1,"name":"go"}]
-
-    fmt.Println(filter.Select("chat", tags))
-    //--->输出结果： [{"icon":"icon-c"},{"icon":"icon-c++"},{"icon":"icon-go"}]
-
-}
-```
 
 ##### 匿名结构体的过滤
 
