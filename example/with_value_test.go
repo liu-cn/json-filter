@@ -12,7 +12,7 @@ func TestMapWithValue(t *testing.T) {
 		A string `json:"a,select(a)"`
 	}
 	//filterMap:=filter.Select("a",&F{A: "a"}).(filter.Filter).Map()
-	filterMap := filter.SelectMarshal("a", &F{A: "a"}).Map() //跟上面写法等价
+	filterMap := filter.SelectFilter("a", &F{A: "a"}).Map() // 推荐使用 typed API
 	filterMap["b"] = "b"
 	filterMap["cc"] = struct {
 		CC string
@@ -44,7 +44,7 @@ func TestSliceWithValue(t *testing.T) {
 	}
 
 	//slices:=filter.Select("a",&F{A: "a"}).(filter.Filter).Slice()
-	slices := filter.SelectMarshal("a", list).Slice() //跟上面写法等价
+	slices := filter.SelectFilter("a", list).Slice() // 推荐使用 typed API
 
 	slices = append(slices, F{A: "b"})
 	slices = append(slices, F{A: "c"})

@@ -9,15 +9,17 @@ type Filter struct {
 	node *fieldNodeTree
 }
 
-// Select 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+// Select returns a filtered value that can be passed directly to json.Marshal.
+//
+// For backward compatibility this function keeps returning interface{}, but the
+// concrete value is always Filter. Use SelectFilter when you want the typed API.
 func Select(selectScene string, el interface{}) interface{} {
-	return jsonFilter(selectScene, el, true)
+	return SelectFilter(selectScene, el)
 }
 
 func jsonFilter(selectScene string, el interface{}, isSelect bool) Filter {
 	tree := &fieldNodeTree{
 		Key:        "",
-		isRoot:     true,
 		ParentNode: nil,
 	}
 	tree.parseAny("", selectScene, reflect.ValueOf(el), isSelect)
@@ -26,9 +28,12 @@ func jsonFilter(selectScene string, el interface{}, isSelect bool) Filter {
 	}
 }
 
-// Omit 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
+// Omit returns a filtered value that can be passed directly to json.Marshal.
+//
+// For backward compatibility this function keeps returning interface{}, but the
+// concrete value is always Filter. Use OmitFilter when you want the typed API.
 func Omit(omitScene string, el interface{}) interface{} {
-	return jsonFilter(omitScene, el, false)
+	return OmitFilter(omitScene, el)
 }
 
 // EnableCache 决定是否启用缓存，默认开启（强烈建议，除非万一缓存模式下出现bug，可以关闭缓存退回曾经的无缓存过滤模式），开启缓存后会有30%-40%的性能提升，开启缓存并没有副作用，只是会让结构体的字段tag常驻内存减少tag字符串处理操作
@@ -36,30 +41,53 @@ func EnableCache(enable bool) {
 	enableCache = enable
 }
 
-// SelectMarshal 跟Select方法等价，只是这个会返回具体对象，第一个参数填你结构体select标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的select标签里标注的有该场景那么该字段会被选中。
-func SelectMarshal(selectScene string, el interface{}) Filter {
+// SelectFilter returns the typed Filter result for the given select scene.
+func SelectFilter(selectScene string, el interface{}) Filter {
 	return jsonFilter(selectScene, el, true)
 }
 
-// OmitMarshal 跟Omit方法等价，只是这个会返回具体对象，第一个参数填你结构体omit标签里的场景，第二个参数是你需要过滤的结构体对象，如果字段的omit标签里标注的有该场景那么该字段会被过滤掉
-func OmitMarshal(omitScene string, el interface{}) Filter {
+// OmitFilter returns the typed Filter result for the given omit scene.
+func OmitFilter(omitScene string, el interface{}) Filter {
 	return jsonFilter(omitScene, el, false)
 }
+
+// Deprecated: use SelectFilter.
+func SelectMarshal(selectScene string, el interface{}) Filter {
+	return SelectFilter(selectScene, el)
+}
+
+// Deprecated: use OmitFilter.
+func OmitMarshal(omitScene string, el interface{}) Filter {
+	return OmitFilter(omitScene, el)
+}
+
 func (f Filter) MarshalJSON() ([]byte, error) {
 	return useJSONMarshalFunc(f.node.Marshal())
 }
 
-// Deprecated
+// Deprecated: use MustBytes.
 func (f Filter) MastMarshalJSON() []byte {
-	return f.node.MustBytes()
-}
-func (f Filter) MustMarshalJSON() []byte {
-	return f.node.MustBytes()
+	return f.MustBytes()
 }
 
-// Interface 解析为过滤后待json序列化的map[string]interface{}
+// Deprecated: use MustBytes.
+func (f Filter) MustMarshalJSON() []byte {
+	return f.MustBytes()
+}
+
+// Interface returns the filtered result as a Go value ready for JSON encoding.
 func (f Filter) Interface() interface{} {
 	return f.node.Marshal()
+}
+
+// Bytes returns the filtered JSON bytes.
+func (f Filter) Bytes() ([]byte, error) {
+	return f.node.Bytes()
+}
+
+// MustBytes returns the filtered JSON bytes or panics on error.
+func (f Filter) MustBytes() []byte {
+	return f.node.MustBytes()
 }
 
 // MustJSON 获取解析过滤后的json字符串，如果中途有错误会panic
@@ -97,25 +125,3 @@ func (f Filter) Slice() []interface{} {
 	}
 	return slices
 }
-
-//// SelectCache 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
-//func SelectCache(selectScene string, el interface{}) interface{} {
-//	return jsonFilterCache(selectScene, el, true)
-//}
-//
-//func jsonFilterCache(selectScene string, el interface{}, isSelect bool) Filter {
-//	tree := &fieldNodeTree{
-//		Key:        "",
-//		isRoot:     true,
-//		ParentNode: nil,
-//	}
-//	tree.parseAny2("", selectScene, reflect.ValueOf(el), isSelect)
-//	return Filter{
-//		node: tree,
-//	}
-//}
-//
-//// OmitCache 直接返回过滤后的数据结构，它可以被json.Marshal解析，直接打印会以过滤后的json字符串展示
-//func OmitCache(selectScene string, el interface{}) interface{} {
-//	return jsonFilterCache(selectScene, el, false)
-//}
