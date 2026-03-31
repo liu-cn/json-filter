@@ -20,94 +20,123 @@ type tag struct {
 	Function     string //自定义处理函数
 }
 
-func newSelectTag(tagStr, selectScene, fieldName string) tag {
+type parsedTagSpec struct {
+	UseFieldName string
+	IsAnonymous  bool
+	Omitempty    bool
+	Function     string
+	SelectScenes map[string]struct{}
+	OmitScenes   map[string]struct{}
+}
 
-	tagEl := tag{
-		FieldName:   fieldName,
-		SelectScene: selectScene,
-		IsOmitField: true,
-	}
-	tags := strings.Split(tagStr, ",")
-	tagEl.UseFieldName = fieldName
-
-	if len(tags) < 2 {
-		return tagEl
-	} else {
-		if tags[0] == "" {
-			tagEl.IsAnonymous = true
-		} else {
-			tagEl.UseFieldName = tags[0]
-		}
-	}
-	if tags[1] == "omitempty" {
-		tagEl.Omitempty = true
+func parseTagSpec(tagStr, fieldName string) parsedTagSpec {
+	spec := parsedTagSpec{
+		UseFieldName: fieldName,
 	}
 
-	for _, s := range tags {
-		if strings.HasPrefix(s, "select(") {
-			selectStr := s[7 : len(s)-1]
-			scene := strings.Split(selectStr, "|")
-			for _, v := range scene {
-				if v == selectScene || v == anySelect {
-					//说明选中了tag里的场景,不应该被忽略
-					tagEl.IsOmitField = false
-					tagEl.IsSelect = true
-				}
+	parts := strings.Split(tagStr, ",")
+	for i, raw := range parts {
+		part := strings.TrimSpace(raw)
+		if i == 0 {
+			switch {
+			case part == "":
+				spec.IsAnonymous = true
+				continue
+			case isTagOption(part):
+				// Leave the struct field name in place and parse as an option below.
+			default:
+				spec.UseFieldName = part
+				continue
 			}
 		}
-		if strings.HasPrefix(s, "func(") {
-			tagEl.Function = s[5 : len(s)-1]
+
+		switch {
+		case part == "omitempty":
+			spec.Omitempty = true
+		case strings.HasPrefix(part, "select(") && strings.HasSuffix(part, ")"):
+			spec.SelectScenes = addScenes(spec.SelectScenes, part[7:len(part)-1])
+		case strings.HasPrefix(part, "omit(") && strings.HasSuffix(part, ")"):
+			spec.OmitScenes = addScenes(spec.OmitScenes, part[5:len(part)-1])
+		case strings.HasPrefix(part, "func(") && strings.HasSuffix(part, ")"):
+			spec.Function = part[5 : len(part)-1]
 		}
+	}
+
+	return spec
+}
+
+func isTagOption(part string) bool {
+	return part == "omitempty" ||
+		(strings.HasPrefix(part, "select(") && strings.HasSuffix(part, ")")) ||
+		(strings.HasPrefix(part, "omit(") && strings.HasSuffix(part, ")")) ||
+		(strings.HasPrefix(part, "func(") && strings.HasSuffix(part, ")"))
+}
+
+func addScenes(dst map[string]struct{}, scenes string) map[string]struct{} {
+	if dst == nil {
+		dst = make(map[string]struct{})
+	}
+	for _, scene := range strings.Split(scenes, "|") {
+		scene = strings.TrimSpace(scene)
+		if scene == "" {
+			continue
+		}
+		dst[scene] = struct{}{}
+	}
+	return dst
+}
+
+func hasScene(scenes map[string]struct{}, scene string) bool {
+	if len(scenes) == 0 {
+		return false
+	}
+	_, ok := scenes[scene]
+	return ok
+}
+
+func (spec parsedTagSpec) selectTag(selectScene, fieldName string) tag {
+	tagEl := tag{
+		FieldName:    fieldName,
+		SelectScene:  selectScene,
+		IsOmitField:  true,
+		UseFieldName: spec.UseFieldName,
+		IsAnonymous:  spec.IsAnonymous,
+		Omitempty:    spec.Omitempty,
+		Function:     spec.Function,
+	}
+
+	if hasScene(spec.SelectScenes, selectScene) || hasScene(spec.SelectScenes, anySelect) {
+		tagEl.IsOmitField = false
+		tagEl.IsSelect = true
 	}
 	return tagEl
 }
 
-func newOmitTag(tagStr, omitScene, fieldName string) tag {
+func (spec parsedTagSpec) omitTag(omitScene, fieldName string) tag {
 	tagEl := tag{
-		FieldName:   fieldName,
-		SelectScene: omitScene,
-		IsOmitField: false,
-		IsSelect:    true,
-	}
-	tags := strings.Split(tagStr, ",")
-	tagEl.UseFieldName = fieldName
-
-	if len(tags) < 2 {
-		if len(tags) == 1 {
-			if tags[0] != "" {
-				tagEl.UseFieldName = tags[0]
-			}
-		}
-		return tagEl
-	} else {
-		if tags[0] == "" {
-			tagEl.IsAnonymous = true
-		} else {
-			tagEl.UseFieldName = tags[0]
-		}
-	}
-	if tags[1] == "omitempty" {
-		tagEl.Omitempty = true
+		FieldName:    fieldName,
+		SelectScene:  omitScene,
+		IsOmitField:  false,
+		IsSelect:     true,
+		UseFieldName: spec.UseFieldName,
+		IsAnonymous:  spec.IsAnonymous,
+		Omitempty:    spec.Omitempty,
+		Function:     spec.Function,
 	}
 
-	for _, s := range tags {
-		if strings.HasPrefix(s, "omit(") {
-			selectStr := s[5 : len(s)-1]
-			scene := strings.Split(selectStr, "|")
-			for _, v := range scene {
-				if v == omitScene || v == anySelect {
-					//说明选中了tag里的场景,应该被忽略
-					tagEl.IsOmitField = true
-					tagEl.IsSelect = false
-					return tagEl
-				}
-			}
-		}
-		if strings.HasPrefix(s, "func(") {
-			tagEl.Function = s[5 : len(s)-1]
-		}
+	if hasScene(spec.OmitScenes, omitScene) || hasScene(spec.OmitScenes, anySelect) {
+		tagEl.IsOmitField = true
+		tagEl.IsSelect = false
 	}
 	return tagEl
+}
+
+func newSelectTag(tagStr, selectScene, fieldName string) tag {
+	return parseTagSpec(tagStr, fieldName).selectTag(selectScene, fieldName)
+}
+
+func newOmitTag(tagStr, omitScene, fieldName string) tag {
+	return parseTagSpec(tagStr, fieldName).omitTag(omitScene, fieldName)
 }
 
 func newOmitNotTag(omitScene, fieldName string) tag {

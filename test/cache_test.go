@@ -45,10 +45,10 @@ func eq(s string, el interface{}, isSelect bool) result {
 	defer filter.EnableCache(true)
 	if isSelect {
 		json = mustJson(filter.Select(s, el))
-		//json = filter.SelectMarshal(s, el).MustJSON()
+		//json = filter.SelectFilter(s, el).MustJSON()
 	} else {
 		json = mustJson(filter.Omit(s, el))
-		//json = filter.OmitMarshal(s, el).MustJSON()
+		//json = filter.OmitFilter(s, el).MustJSON()
 	}
 	return result{
 		s:         s,

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 )
 
 type tagInfo struct {
@@ -14,27 +13,38 @@ type tagInfo struct {
 }
 
 func (t *fieldNodeTree) parseAny(key, scene string, valueOf reflect.Value, isSelect bool) {
-	typeOf := valueOf.Type()
-
 TakePointerValue: //取指针的值
-	switch typeOf.Kind() {
+	if !valueOf.IsValid() {
+		parserNilInterface(t, key)
+		return
+	}
+
+	switch valueOf.Kind() {
 	case reflect.Ptr: //如果是指针类型则取值重新判断类型
 		if !valueOf.IsNil() {
 			valueOf = valueOf.Elem()
-			typeOf = typeOf.Elem()
 			goto TakePointerValue
 		} else {
 			parserNilInterface(t, key)
+			return
 		}
 	case reflect.Interface:
 		if !valueOf.IsNil() {
 			valueOf = reflect.ValueOf(valueOf.Interface())
-			typeOf = valueOf.Type()
 			goto TakePointerValue
 		} else {
 			parserNilInterface(t, key)
+			return
 		}
+	}
 
+	if v, ok := tryMarshalLeafValue(valueOf); ok {
+		parserLeafValue(t, key, v)
+		return
+	}
+
+	typeOf := valueOf.Type()
+	switch typeOf.Kind() {
 	case reflect.Struct:
 		parserStruct(typeOf, valueOf, t, scene, key, isSelect)
 	case reflect.Bool,
@@ -67,81 +77,80 @@ func parserNilInterface(t *fieldNodeTree, key string) {
 	}
 }
 
-func getFieldOmitTag(field reflect.StructField, scene string) tagInfo {
-	tagInfoEl := tagInfo{}
-	//没开缓存就获取tag
-	jsonTag, ok := field.Tag.Lookup("json")
-	var tag tag
-	if !ok {
-		tag = newOmitNotTag(scene, field.Name)
-	} else {
-		if jsonTag == "-" {
-			tagInfoEl.omit = true
-			return tagInfoEl
+func parserLeafValue(t *fieldNodeTree, key string, val interface{}) {
+	if t.IsAnonymous {
+		tree := &fieldNodeTree{
+			Key:        t.Key,
+			ParentNode: t,
+			Val:        val,
 		}
-		tag = newOmitTag(jsonTag, scene, field.Name)
+		t.AnonymousAddChild(tree)
+		return
 	}
-	tagInfoEl.tag = tag
-	return tagInfoEl
+	t.Val = val
+	t.Key = key
 }
-func getFieldSelectTag(field reflect.StructField, scene string) tagInfo {
-	tagInfoEl := tagInfo{}
-	//没开缓存就获取tag
-	jsonTag, ok := field.Tag.Lookup("json")
-	var tag tag
-	if !ok {
-		tagInfoEl.omit = true
-		return tagInfoEl
-	} else {
-		if jsonTag == "-" {
-			tagInfoEl.omit = true
-			return tagInfoEl
+
+func tryMarshalLeafValue(value reflect.Value) (interface{}, bool) {
+	if marshaler, ok := asJSONMarshaler(value); ok {
+		data, err := marshaler.MarshalJSON()
+		if err == nil {
+			return json.RawMessage(data), true
 		}
-		tag = newSelectTag(jsonTag, scene, field.Name)
 	}
-	tagInfoEl.tag = tag
-	return tagInfoEl
-}
-func getOmitTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagInfo {
-	omitTag := tagInfo{}
-
-	if !enableCache { //没开缓存就获取tag
-		omitTag = getFieldOmitTag(typeOf.Field(i), scene)
-		return omitTag
+	if marshaler, ok := asTextMarshaler(value); ok {
+		data, err := marshaler.MarshalText()
+		if err == nil {
+			return string(data), true
+		}
 	}
-	fieldName := typeOf.Field(i).Name
-	cacheKey := tagCache.key(pkgInfo, scene, fieldName, false)
-	//tagEl, exist := tagCache.fields[cacheKey]
-	tagEl, exist := tagCache.GetField(cacheKey)
-	if !exist { //如果缓存里没取到
-		omitTag = getFieldOmitTag(typeOf.Field(i), scene)
-		//tagCache.fields[cacheKey] = omitTag.tag
-		tagCache.SetField(cacheKey, omitTag.tag)
-		return omitTag
-	}
-	omitTag.tag = tagEl
-
-	return omitTag
+	return nil, false
 }
 
-func getSelectTag(scene string, pkgInfo string, i int, typeOf reflect.Type) tagInfo {
-	selectTag := tagInfo{}
-
-	if !enableCache {
-		return getFieldSelectTag(typeOf.Field(i), scene)
+func asJSONMarshaler(value reflect.Value) (json.Marshaler, bool) {
+	if !value.IsValid() {
+		return nil, false
 	}
-
-	fieldName := typeOf.Field(i).Name
-	cacheKey := tagCache.key(pkgInfo, scene, fieldName, true)
-	//tagEl, exist := tagCache.fields[cacheKey]
-	tagEl, exist := tagCache.GetField(cacheKey)
-	if !exist { //如果缓存里没取到
-		selectTag = getFieldSelectTag(typeOf.Field(i), scene)
-		tagCache.SetField(cacheKey, selectTag.tag)
-		return selectTag
+	if value.CanInterface() {
+		if marshaler, ok := value.Interface().(json.Marshaler); ok {
+			return marshaler, true
+		}
 	}
-	selectTag.tag = tagEl
-	return selectTag
+	if ptr := addressableValue(value); ptr.IsValid() && ptr.CanInterface() {
+		if marshaler, ok := ptr.Interface().(json.Marshaler); ok {
+			return marshaler, true
+		}
+	}
+	return nil, false
+}
+
+func asTextMarshaler(value reflect.Value) (encoding.TextMarshaler, bool) {
+	if !value.IsValid() {
+		return nil, false
+	}
+	if value.CanInterface() {
+		if marshaler, ok := value.Interface().(encoding.TextMarshaler); ok {
+			return marshaler, true
+		}
+	}
+	if ptr := addressableValue(value); ptr.IsValid() && ptr.CanInterface() {
+		if marshaler, ok := ptr.Interface().(encoding.TextMarshaler); ok {
+			return marshaler, true
+		}
+	}
+	return nil, false
+}
+
+func addressableValue(value reflect.Value) reflect.Value {
+	if !value.IsValid() {
+		return reflect.Value{}
+	}
+	if value.CanAddr() {
+		return value.Addr()
+	}
+	ptr := reflect.New(value.Type())
+	ptr.Elem().Set(value)
+	return ptr
 }
 
 // map的key为数值 bool 和字符串
@@ -149,6 +158,8 @@ func isMapKey(t reflect.Value) string {
 	switch t.Kind() {
 	case reflect.String:
 		return t.String()
+	case reflect.Bool:
+		return fmt.Sprintf("%v", t.Bool())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return fmt.Sprintf("%v", t.Interface())
 	default:
@@ -164,15 +175,12 @@ func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect b
 	for i := 0; i < len(keys); i++ {
 		mapIsNil := false
 		val := valueOf.MapIndex(keys[i])
-	takeValMap:
-		if val.Kind() == reflect.Ptr {
+		for val.Kind() == reflect.Ptr {
 			if val.IsNil() {
 				mapIsNil = true
-				continue
-			} else {
-				val = val.Elem()
-				goto takeValMap
+				break
 			}
+			val = val.Elem()
 		}
 
 		key := isMapKey(keys[i])
@@ -195,24 +203,13 @@ func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect b
 }
 
 func parserBaseType(valueOf reflect.Value, t *fieldNodeTree, key string) {
-
-	if t.IsAnonymous {
-		tree := &fieldNodeTree{
-			Key:        t.Key,
-			ParentNode: t,
-			Val:        t.Val,
-		}
-		t.AnonymousAddChild(tree)
-	} else {
-		t.Val = valueOf.Interface()
-		t.Key = key
-	}
+	parserLeafValue(t, key, valueOf.Interface())
 }
 
 func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
 	if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
 		t.Key = key
-		t.Val = valueOf.Interface()
+		t.Val = valueOf.Convert(timeTypes).Interface()
 		return
 	}
 	if typeOf.NumField() == 0 { //如果是一个struct{}{}类型的字段或者是一个空的自定义结构体编码为{}
@@ -220,16 +217,8 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 		t.Val = struct{}{}
 		return
 	}
-	pkgInfo := typeOf.PkgPath() + "." + typeOf.Name()
-	for i := 0; i < typeOf.NumField(); i++ {
-		if !typeOf.Field(i).IsExported() { //跳过非导出字段
-			continue
-		}
-		var tagInfo tagInfo
-		tagInfo = getSelectTag(scene, pkgInfo, i, typeOf)
-		if !isSelect {
-			tagInfo = getOmitTag(scene, pkgInfo, i, typeOf)
-		}
+	for _, meta := range getFieldMetas(typeOf) {
+		tagInfo := meta.tagInfo(scene, isSelect)
 
 		if tagInfo.omit {
 			continue
@@ -238,14 +227,14 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 		if tag.IsOmitField || !tag.IsSelect {
 			continue
 		}
-		isAnonymous := typeOf.Field(i).Anonymous && tag.IsAnonymous ////什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
+		isAnonymous := meta.anonymous && tag.IsAnonymous ////什么时候才算真正的匿名字段？ Book中Article才算匿名结构体
 
 		tree := &fieldNodeTree{
 			Key:         tag.UseFieldName,
 			ParentNode:  t,
 			IsAnonymous: isAnonymous,
 		}
-		value := valueOf.Field(i)
+		value := valueOf.Field(meta.index)
 		if tag.Function != "" { //解析并调用func选择器
 			function := valueOf.MethodByName(tag.Function)
 			if !function.IsValid() {
@@ -283,21 +272,6 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 			}
 		}
 
-		valueInterface := value.Interface()
-		if v, ok := valueInterface.(json.Marshaler); ok {
-			if value.CanAddr() {
-				if _, ok1 := value.Addr().Interface().(GTime); ok1 {
-					marshalJSON, err := v.MarshalJSON()
-					if err != nil {
-						fmt.Println("json marshal error:", err)
-					} else {
-						str := string(marshalJSON)
-						value = reflect.ValueOf(strings.Trim(str, `"`))
-					}
-				}
-			}
-
-		}
 		tree.parseAny(tag.UseFieldName, scene, value, isSelect)
 
 		if t.IsAnonymous {
@@ -343,15 +317,12 @@ func parserSliceOrArray(typeOf reflect.Type, valueOf reflect.Value, t *fieldNode
 			ParentNode: t,
 		}
 		val := valueOf.Index(i)
-	takeValSlice:
-		if val.Kind() == reflect.Ptr {
+		for val.Kind() == reflect.Ptr {
 			if val.IsNil() {
 				sliceIsNil = true
-				continue
-			} else {
-				val = val.Elem()
-				goto takeValSlice
+				break
 			}
+			val = val.Elem()
 		}
 
 		if sliceIsNil {

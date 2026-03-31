@@ -147,3 +147,13 @@ func TestOmitTag1(t *testing.T) {
 
 	//ok
 }
+
+func TestTagOptionsOrder(t *testing.T) {
+	got := newSelectTag("name,select(req),func(Build),omitempty", "req", "Name")
+	if !got.Omitempty {
+		t.Fatalf("omitempty should be parsed regardless of position")
+	}
+	if got.Function != "Build" {
+		t.Fatalf("unexpected function: %s", got.Function)
+	}
+}
