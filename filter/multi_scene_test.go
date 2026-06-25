@@ -109,13 +109,12 @@ func TestSelectScenesAPIWithPermissionLevels(t *testing.T) {
 }
 
 func TestSelectScenesAPIWithSlice(t *testing.T) {
-	user1 := newMultiSceneUser()
-	user2 := newMultiSceneUser()
-	user2.ID = 2
-	user2.Name = "Grace"
-	user2.Email = "grace@example.com"
+	users := []multiSceneUser{
+		{ID: 1, Name: "Ada", Email: "ada@example.com"},
+		{ID: 2, Name: "Grace", Email: "grace@example.com"},
+	}
 
-	data, err := json.Marshal(SelectScenes([]multiSceneUser{user1, user2}, "public", "member"))
+	data, err := json.Marshal(SelectScenes(users, "public", "member"))
 	if err != nil {
 		t.Fatalf("marshal failed: %v", err)
 	}
