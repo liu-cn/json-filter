@@ -130,48 +130,62 @@ filter.OmitScenesFilter(value, scenes...)
 
 调用侧可以一次传多个场景，语义是“命中任意一个场景就保留/排除”。
 
-一个常见用法是权限层级：
+场景可以表达接口形态、客户端差异、业务模块、字段包、登录态等不同维度：
 
 ```go
-type User struct {
-	ID           int    `json:"id,select(public)"`
-	Name         string `json:"name,select(public)"`
-	Email        string `json:"email,select(member)"`
+type Article struct {
+	ID           int    `json:"id,select(summary|detail|admin)"`
+	Title        string `json:"title,select(summary|detail|seo|admin)"`
+	Cover        string `json:"cover,select(summary|mobile)"`
+	Body         string `json:"body,select(detail)"`
+	MetaTitle    string `json:"meta_title,select(seo)"`
 	InternalNote string `json:"internal_note,select(admin)"`
 }
 
-// 普通用户：只看 public 字段
-filter.SelectScenes(user, "public")
+// 列表页：轻量摘要字段
+filter.SelectScenes(article, "summary")
 
-// 会员：public + member
-filter.SelectScenes(user, "public", "member")
+// 移动端详情页：详情字段 + 移动端额外素材
+filter.SelectScenes(article, "detail", "mobile")
 
-// 管理员：public + member + admin
-filter.SelectScenes(user, "public", "member", "admin")
+// 后台详情页：详情字段 + 内部字段
+filter.SelectScenes(article, "detail", "admin")
 ```
 
-实际接口里，场景通常来自登录用户的权限计算结果，可以直接展开 `[]string`：
+实际接口里，场景通常来自请求上下文、客户端、开关或登录态，可以直接展开 `[]string`：
 
 ```go
-type Viewer struct {
-	IsMember bool
-	IsAdmin  bool
+type RequestContext struct {
+	Client  string
+	NeedSEO bool
+	IsStaff bool
 }
 
-func visibleScenes(viewer Viewer) []string {
-	scenes := []string{"public"}
-	if viewer.IsMember {
-		scenes = append(scenes, "member")
+func articleScenes(ctx RequestContext) []string {
+	scenes := []string{"detail"}
+	if ctx.Client == "mobile" {
+		scenes = append(scenes, "mobile")
 	}
-	if viewer.IsAdmin {
+	if ctx.NeedSEO {
+		scenes = append(scenes, "seo")
+	}
+	if ctx.IsStaff {
 		scenes = append(scenes, "admin")
 	}
 	return scenes
 }
 
-viewer := Viewer{IsMember: true}
-fmt.Println(filter.SelectScenes(user, visibleScenes(viewer)...))
-// {"email":"ada@example.com","id":1,"name":"Ada"}
+ctx := RequestContext{Client: "mobile", NeedSEO: true}
+article := Article{
+	ID:        1,
+	Title:     "Release notes",
+	Cover:     "cover.png",
+	Body:      "Full article",
+	MetaTitle: "Release notes SEO",
+}
+
+fmt.Println(filter.SelectScenes(article, articleScenes(ctx)...))
+// {"body":"Full article","cover":"cover.png","id":1,"meta_title":"Release notes SEO","title":"Release notes"}
 ```
 
 `struct` 切片也可以直接传进去，列表接口不需要额外循环：
@@ -449,44 +463,59 @@ fmt.Println(filter.SelectScenes(user, "article"))
 Multiple requested scenes use OR semantics: a field is included or excluded when
 any requested scene matches its tag.
 
-This is useful for permission tiers:
+Scenes can describe response shapes, client-specific fields, feature modules,
+reusable field bundles, login state, and other business dimensions:
 
 ```go
-type User struct {
-	ID           int    `json:"id,select(public)"`
-	Name         string `json:"name,select(public)"`
-	Email        string `json:"email,select(member)"`
+type Article struct {
+	ID           int    `json:"id,select(summary|detail|admin)"`
+	Title        string `json:"title,select(summary|detail|seo|admin)"`
+	Cover        string `json:"cover,select(summary|mobile)"`
+	Body         string `json:"body,select(detail)"`
+	MetaTitle    string `json:"meta_title,select(seo)"`
 	InternalNote string `json:"internal_note,select(admin)"`
 }
 
-filter.SelectScenes(user, "public")
-filter.SelectScenes(user, "public", "member")
-filter.SelectScenes(user, "public", "member", "admin")
+filter.SelectScenes(article, "summary")
+filter.SelectScenes(article, "detail", "mobile")
+filter.SelectScenes(article, "detail", "admin")
 ```
 
-In real handlers, scenes often come from the current viewer's permissions. Pass
-that `[]string` with variadic expansion:
+In real handlers, scenes often come from request context, client type, feature
+flags, or login state. Pass that `[]string` with variadic expansion:
 
 ```go
-type Viewer struct {
-	IsMember bool
-	IsAdmin  bool
+type RequestContext struct {
+	Client  string
+	NeedSEO bool
+	IsStaff bool
 }
 
-func visibleScenes(viewer Viewer) []string {
-	scenes := []string{"public"}
-	if viewer.IsMember {
-		scenes = append(scenes, "member")
+func articleScenes(ctx RequestContext) []string {
+	scenes := []string{"detail"}
+	if ctx.Client == "mobile" {
+		scenes = append(scenes, "mobile")
 	}
-	if viewer.IsAdmin {
+	if ctx.NeedSEO {
+		scenes = append(scenes, "seo")
+	}
+	if ctx.IsStaff {
 		scenes = append(scenes, "admin")
 	}
 	return scenes
 }
 
-viewer := Viewer{IsMember: true}
-fmt.Println(filter.SelectScenes(user, visibleScenes(viewer)...))
-// {"email":"ada@example.com","id":1,"name":"Ada"}
+ctx := RequestContext{Client: "mobile", NeedSEO: true}
+article := Article{
+	ID:        1,
+	Title:     "Release notes",
+	Cover:     "cover.png",
+	Body:      "Full article",
+	MetaTitle: "Release notes SEO",
+}
+
+fmt.Println(filter.SelectScenes(article, articleScenes(ctx)...))
+// {"body":"Full article","cover":"cover.png","id":1,"meta_title":"Release notes SEO","title":"Release notes"}
 ```
 
 Slices can be passed directly too, so list responses do not need an extra loop:

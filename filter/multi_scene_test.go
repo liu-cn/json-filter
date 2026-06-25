@@ -108,31 +108,54 @@ func TestSelectScenesAPIWithPermissionLevels(t *testing.T) {
 	}`)
 }
 
-func TestSelectScenesAPIWithDynamicPermissionScenes(t *testing.T) {
-	viewer := struct {
-		IsMember bool
-		IsAdmin  bool
-	}{
-		IsMember: true,
+func TestSelectScenesAPIWithDynamicRequestScenes(t *testing.T) {
+	type article struct {
+		ID           int    `json:"id,select(summary|detail|admin)"`
+		Title        string `json:"title,select(summary|detail|seo|admin)"`
+		Cover        string `json:"cover,select(summary|mobile)"`
+		Body         string `json:"body,select(detail)"`
+		MetaTitle    string `json:"meta_title,select(seo)"`
+		InternalNote string `json:"internal_note,select(admin)"`
 	}
 
-	scenes := []string{"public"}
-	if viewer.IsMember {
-		scenes = append(scenes, "member")
+	ctx := struct {
+		Client  string
+		NeedSEO bool
+		IsStaff bool
+	}{
+		Client:  "mobile",
+		NeedSEO: true,
 	}
-	if viewer.IsAdmin {
+
+	scenes := []string{"detail"}
+	if ctx.Client == "mobile" {
+		scenes = append(scenes, "mobile")
+	}
+	if ctx.NeedSEO {
+		scenes = append(scenes, "seo")
+	}
+	if ctx.IsStaff {
 		scenes = append(scenes, "admin")
 	}
 
-	data, err := json.Marshal(SelectScenes(newMultiSceneUser(), scenes...))
+	data, err := json.Marshal(SelectScenes(article{
+		ID:           1,
+		Title:        "Release notes",
+		Cover:        "cover.png",
+		Body:         "Full article",
+		MetaTitle:    "Release notes SEO",
+		InternalNote: "draft",
+	}, scenes...))
 	if err != nil {
 		t.Fatalf("marshal failed: %v", err)
 	}
 
 	assertJSONEqual(t, string(data), `{
 		"id": 1,
-		"name": "Ada",
-		"email": "ada@example.com"
+		"title": "Release notes",
+		"cover": "cover.png",
+		"body": "Full article",
+		"meta_title": "Release notes SEO"
 	}`)
 }
 
