@@ -86,6 +86,32 @@ func addScenes(dst map[string]struct{}, scenes string) map[string]struct{} {
 	return dst
 }
 
+func joinScenes(scenes ...string) string {
+	return strings.Join(scenes, "|")
+}
+
+type sceneMatcher struct {
+	raw    string
+	single string
+	scenes map[string]struct{}
+}
+
+func newSceneMatcher(scene string) sceneMatcher {
+	matcher := sceneMatcher{
+		raw: scene,
+	}
+	if !strings.Contains(scene, "|") {
+		matcher.single = strings.TrimSpace(scene)
+		return matcher
+	}
+	matcher.scenes = addScenes(nil, scene)
+	return matcher
+}
+
+func newSceneMatcherFromScenes(scenes ...string) sceneMatcher {
+	return newSceneMatcher(joinScenes(scenes...))
+}
+
 func hasScene(scenes map[string]struct{}, scene string) bool {
 	if len(scenes) == 0 {
 		return false
@@ -94,10 +120,28 @@ func hasScene(scenes map[string]struct{}, scene string) bool {
 	return ok
 }
 
-func (spec parsedTagSpec) selectTag(selectScene, fieldName string) tag {
+func (matcher sceneMatcher) matchAny(scenes map[string]struct{}) bool {
+	if len(scenes) == 0 {
+		return false
+	}
+	if hasScene(scenes, anySelect) {
+		return true
+	}
+	if matcher.scenes == nil {
+		return hasScene(scenes, matcher.single)
+	}
+	for requested := range matcher.scenes {
+		if hasScene(scenes, requested) {
+			return true
+		}
+	}
+	return false
+}
+
+func (spec parsedTagSpec) selectTag(selectScene sceneMatcher, fieldName string) tag {
 	tagEl := tag{
 		FieldName:    fieldName,
-		SelectScene:  selectScene,
+		SelectScene:  selectScene.raw,
 		IsOmitField:  true,
 		UseFieldName: spec.UseFieldName,
 		IsAnonymous:  spec.IsAnonymous,
@@ -105,17 +149,17 @@ func (spec parsedTagSpec) selectTag(selectScene, fieldName string) tag {
 		Function:     spec.Function,
 	}
 
-	if hasScene(spec.SelectScenes, selectScene) || hasScene(spec.SelectScenes, anySelect) {
+	if selectScene.matchAny(spec.SelectScenes) {
 		tagEl.IsOmitField = false
 		tagEl.IsSelect = true
 	}
 	return tagEl
 }
 
-func (spec parsedTagSpec) omitTag(omitScene, fieldName string) tag {
+func (spec parsedTagSpec) omitTag(omitScene sceneMatcher, fieldName string) tag {
 	tagEl := tag{
 		FieldName:    fieldName,
-		SelectScene:  omitScene,
+		SelectScene:  omitScene.raw,
 		IsOmitField:  false,
 		IsSelect:     true,
 		UseFieldName: spec.UseFieldName,
@@ -124,7 +168,7 @@ func (spec parsedTagSpec) omitTag(omitScene, fieldName string) tag {
 		Function:     spec.Function,
 	}
 
-	if hasScene(spec.OmitScenes, omitScene) || hasScene(spec.OmitScenes, anySelect) {
+	if omitScene.matchAny(spec.OmitScenes) {
 		tagEl.IsOmitField = true
 		tagEl.IsSelect = false
 	}
@@ -132,18 +176,18 @@ func (spec parsedTagSpec) omitTag(omitScene, fieldName string) tag {
 }
 
 func newSelectTag(tagStr, selectScene, fieldName string) tag {
-	return parseTagSpec(tagStr, fieldName).selectTag(selectScene, fieldName)
+	return parseTagSpec(tagStr, fieldName).selectTag(newSceneMatcher(selectScene), fieldName)
 }
 
 func newOmitTag(tagStr, omitScene, fieldName string) tag {
-	return parseTagSpec(tagStr, fieldName).omitTag(omitScene, fieldName)
+	return parseTagSpec(tagStr, fieldName).omitTag(newSceneMatcher(omitScene), fieldName)
 }
 
-func newOmitNotTag(omitScene, fieldName string) tag {
+func newOmitNotTag(omitScene sceneMatcher, fieldName string) tag {
 	return tag{
 		FieldName:    fieldName,
 		IsSelect:     true,
 		UseFieldName: fieldName,
-		SelectScene:  omitScene,
+		SelectScene:  omitScene.raw,
 	}
 }

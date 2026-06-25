@@ -17,7 +17,12 @@ func Select(selectScene string, el interface{}) interface{} {
 	return SelectFilter(selectScene, el)
 }
 
-func jsonFilter(selectScene string, el interface{}, isSelect bool) Filter {
+// SelectScenes returns a filtered value for any of the given select scenes.
+func SelectScenes(el interface{}, selectScenes ...string) interface{} {
+	return SelectScenesFilter(el, selectScenes...)
+}
+
+func jsonFilter(selectScene sceneMatcher, el interface{}, isSelect bool) Filter {
 	tree := &fieldNodeTree{
 		Key:        "",
 		ParentNode: nil,
@@ -36,6 +41,11 @@ func Omit(omitScene string, el interface{}) interface{} {
 	return OmitFilter(omitScene, el)
 }
 
+// OmitScenes returns a filtered value excluding fields that match any omit scene.
+func OmitScenes(el interface{}, omitScenes ...string) interface{} {
+	return OmitScenesFilter(el, omitScenes...)
+}
+
 // EnableCache 决定是否启用缓存，默认开启（强烈建议，除非万一缓存模式下出现bug，可以关闭缓存退回曾经的无缓存过滤模式），开启缓存后会有30%-40%的性能提升，开启缓存并没有副作用，只是会让结构体的字段tag常驻内存减少tag字符串处理操作
 func EnableCache(enable bool) {
 	enableCache = enable
@@ -43,12 +53,22 @@ func EnableCache(enable bool) {
 
 // SelectFilter returns the typed Filter result for the given select scene.
 func SelectFilter(selectScene string, el interface{}) Filter {
-	return jsonFilter(selectScene, el, true)
+	return jsonFilter(newSceneMatcher(selectScene), el, true)
+}
+
+// SelectScenesFilter returns the typed Filter result for any select scene.
+func SelectScenesFilter(el interface{}, selectScenes ...string) Filter {
+	return jsonFilter(newSceneMatcherFromScenes(selectScenes...), el, true)
 }
 
 // OmitFilter returns the typed Filter result for the given omit scene.
 func OmitFilter(omitScene string, el interface{}) Filter {
-	return jsonFilter(omitScene, el, false)
+	return jsonFilter(newSceneMatcher(omitScene), el, false)
+}
+
+// OmitScenesFilter returns the typed Filter result excluding any omit scene.
+func OmitScenesFilter(el interface{}, omitScenes ...string) Filter {
+	return jsonFilter(newSceneMatcherFromScenes(omitScenes...), el, false)
 }
 
 // Deprecated: use SelectFilter.

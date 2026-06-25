@@ -12,7 +12,7 @@ type tagInfo struct {
 	omit bool //表示这个字段忽略
 }
 
-func (t *fieldNodeTree) parseAny(key, scene string, valueOf reflect.Value, isSelect bool) {
+func (t *fieldNodeTree) parseAny(key string, scene sceneMatcher, valueOf reflect.Value, isSelect bool) {
 TakePointerValue: //取指针的值
 	if !valueOf.IsValid() {
 		parserNilInterface(t, key)
@@ -166,7 +166,7 @@ func isMapKey(t reflect.Value) string {
 		return ""
 	}
 }
-func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene string, isSelect bool) {
+func parserMap(valueOf reflect.Value, t *fieldNodeTree, scene sceneMatcher, isSelect bool) {
 	keys := valueOf.MapKeys()
 	if len(keys) == 0 { //空map情况下解析为{}
 		t.Val = struct{}{}
@@ -206,7 +206,7 @@ func parserBaseType(valueOf reflect.Value, t *fieldNodeTree, key string) {
 	parserLeafValue(t, key, valueOf.Interface())
 }
 
-func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
+func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene sceneMatcher, key string, isSelect bool) {
 	if valueOf.CanConvert(timeTypes) { //是time.Time类型或者底层是time.Time类型
 		t.Key = key
 		t.Val = valueOf.Convert(timeTypes).Interface()
@@ -286,7 +286,7 @@ func parserStruct(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, 
 
 }
 
-func parserSliceOrArray(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene string, key string, isSelect bool) {
+func parserSliceOrArray(typeOf reflect.Type, valueOf reflect.Value, t *fieldNodeTree, scene sceneMatcher, key string, isSelect bool) {
 	val1 := valueOf.Interface()
 	ok := valueOf.CanConvert(byteTypes)
 	if ok {

@@ -95,8 +95,8 @@ func main() {
 
 推荐约定：
 
-- 直接响应 HTTP：优先用 `Select` / `Omit`
-- 需要继续处理过滤结果：优先用 `SelectFilter` / `OmitFilter`
+- 直接响应 HTTP：优先用 `Select` / `Omit` / `SelectScenes` / `OmitScenes`
+- 需要继续处理过滤结果：优先用 `SelectFilter` / `OmitFilter` / `SelectScenesFilter` / `OmitScenesFilter`
 
 ### 核心 API
 
@@ -106,6 +106,12 @@ filter.Omit(scene, value)
 
 filter.SelectFilter(scene, value)
 filter.OmitFilter(scene, value)
+
+filter.SelectScenes(value, scenes...)
+filter.OmitScenes(value, scenes...)
+
+filter.SelectScenesFilter(value, scenes...)
+filter.OmitScenesFilter(value, scenes...)
 ```
 
 `Filter` 提供这些方法：
@@ -123,6 +129,55 @@ filter.OmitFilter(scene, value)
 - `Map()` 只适合顶层结果是对象时使用
 - `Slice()` 只适合顶层结果是数组时使用
 - 如果顶层结果可能是标量或 `null`，优先用 `Interface()`、`JSON()`、`Bytes()`
+
+### 多场景调用
+
+调用侧可以一次传多个场景，语义是“命中任意一个场景就保留/排除”。
+
+```go
+filter.Select("id|name|profile.age", user)
+filter.Omit("password|profile.address", user)
+```
+
+如果你已经有多个场景值，推荐使用 value-first 的可变参数 API：
+
+```go
+filter.SelectScenes(user, "id", "name", "profile.age")
+filter.OmitScenes(user, "password", "profile.address")
+```
+
+一个常见用法是权限层级：
+
+```go
+type User struct {
+	ID           int    `json:"id,select(public)"`
+	Name         string `json:"name,select(public)"`
+	Email        string `json:"email,select(member)"`
+	InternalNote string `json:"internal_note,select(admin)"`
+}
+
+// 普通用户：只看 public 字段
+filter.SelectScenes(user, "public")
+
+// 会员：public + member
+filter.SelectScenes(user, "public", "member")
+
+// 管理员：public + member + admin
+filter.SelectScenes(user, "public", "member", "admin")
+```
+
+如果使用 `profile.age` 这种精确字段名作为场景，嵌套 struct 的父字段也需要声明对应场景，过滤器才会继续解析子字段：
+
+```go
+type Profile struct {
+	Age   int    `json:"age,select(profile.age)"`
+	Email string `json:"email,select(profile.email)"`
+}
+
+type User struct {
+	Profile Profile `json:"profile,select(profile.age|profile.email)"`
+}
+```
 
 ### Tag 规则
 
@@ -365,6 +420,38 @@ fmt.Println(filter.Select("article", user))
 - `SelectFilter(scene, value)` / `OmitFilter(scene, value)`
   Use these when you want the typed `Filter` helpers such as `JSON`, `Bytes`,
   `Map`, `Slice`, or `Interface`.
+- `SelectScenes(value, scenes...)` / `OmitScenes(value, scenes...)`
+  Use these when you already have multiple scenes or field-level selectors.
+- `SelectScenesFilter(value, scenes...)` / `OmitScenesFilter(value, scenes...)`
+  Typed variants for the multi-scene API.
+
+### Multiple Scenes
+
+Multiple requested scenes use OR semantics: a field is included or excluded when
+any requested scene matches its tag.
+
+```go
+filter.Select("id|name|profile.age", user)
+filter.Omit("password|profile.address", user)
+
+filter.SelectScenes(user, "id", "name", "profile.age")
+filter.OmitScenes(user, "password", "profile.address")
+```
+
+This is useful for permission tiers:
+
+```go
+type User struct {
+	ID           int    `json:"id,select(public)"`
+	Name         string `json:"name,select(public)"`
+	Email        string `json:"email,select(member)"`
+	InternalNote string `json:"internal_note,select(admin)"`
+}
+
+filter.SelectScenes(user, "public")
+filter.SelectScenes(user, "public", "member")
+filter.SelectScenes(user, "public", "member", "admin")
+```
 
 ### Tag Syntax
 

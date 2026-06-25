@@ -84,7 +84,7 @@ func buildFieldMetas(typeOf reflect.Type) []fieldMeta {
 	return metas
 }
 
-func (m fieldMeta) tagInfo(scene string, isSelect bool) tagInfo {
+func (m fieldMeta) tagInfo(scene sceneMatcher, isSelect bool) tagInfo {
 	if isSelect {
 		if !m.hasJSONTag || m.ignored {
 			return tagInfo{omit: true}
