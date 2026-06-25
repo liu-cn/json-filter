@@ -23,13 +23,15 @@ Scene-based JSON field filtering for Go. Reuse one model across multiple API res
 - 手动拷贝字段
 - 或者直接把原始 struct 全量返回
 
-`json-filter` 的做法是把“哪些字段在哪些场景下返回”直接写在 `json` tag 里，然后用 `Select` / `Omit` 在运行时生成最终 JSON。
+`json-filter` 的做法是把“哪些字段在哪些场景下返回”直接写在 `json` tag 里，然后用 `SelectScenes` / `OmitScenes` 在运行时生成最终 JSON。
 
 ### 特性
 
 - 支持 `struct`、`map`、`slice`、`array`、指针、`interface{}`
 - 支持深层嵌套组合
 - 支持 `select(...)`、`omit(...)`、`omitempty`、`func(...)`
+- 支持调用侧一次传入多个场景
+- 支持列表响应直接传入 `[]struct`
 - 支持 `$any`
 - 支持匿名字段展开
 - 兼容 `encoding/json`
