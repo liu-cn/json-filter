@@ -135,6 +135,15 @@ filter.SelectScenes(user, "id", "name", "profile.age")
 filter.OmitScenes(user, "password", "profile.address")
 ```
 
+如果场景/字段来自请求参数、配置或权限计算结果，可以直接展开 `[]string`：
+
+```go
+fields := []string{"id", "name", "profile.age", "orders.id"}
+
+fmt.Println(filter.SelectScenes(user, fields...))
+// {"id":1,"name":"Ada","orders":[{"id":101},{"id":102}],"profile":{"age":28}}
+```
+
 一个常见用法是权限层级：
 
 ```go
@@ -433,6 +442,16 @@ any requested scene matches its tag.
 ```go
 filter.SelectScenes(user, "id", "name", "profile.age")
 filter.OmitScenes(user, "password", "profile.address")
+```
+
+When the scenes or field selectors come from request parameters, config, or
+permission logic, pass a `[]string` with variadic expansion:
+
+```go
+fields := []string{"id", "name", "profile.age", "orders.id"}
+
+fmt.Println(filter.SelectScenes(user, fields...))
+// {"id":1,"name":"Ada","orders":[{"id":101},{"id":102}],"profile":{"age":28}}
 ```
 
 This is useful for permission tiers:

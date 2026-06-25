@@ -108,6 +108,27 @@ func TestSelectScenesAPIWithPermissionLevels(t *testing.T) {
 	}`)
 }
 
+func TestSelectScenesAPIWithDynamicScenes(t *testing.T) {
+	fields := []string{"id", "name", "profile.age", "orders.id"}
+
+	data, err := json.Marshal(SelectScenes(newMultiSceneUser(), fields...))
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+
+	assertJSONEqual(t, string(data), `{
+		"id": 1,
+		"name": "Ada",
+		"profile": {
+			"age": 28
+		},
+		"orders": [
+			{"id": 101},
+			{"id": 102}
+		]
+	}`)
+}
+
 func TestSelectScenesAPIWithSlice(t *testing.T) {
 	users := []multiSceneUser{
 		{ID: 1, Name: "Ada", Email: "ada@example.com"},
