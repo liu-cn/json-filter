@@ -108,6 +108,32 @@ func TestSelectScenesAPIWithPermissionLevels(t *testing.T) {
 	}`)
 }
 
+func TestSelectScenesAPIWithSlice(t *testing.T) {
+	user1 := newMultiSceneUser()
+	user2 := newMultiSceneUser()
+	user2.ID = 2
+	user2.Name = "Grace"
+	user2.Email = "grace@example.com"
+
+	data, err := json.Marshal(SelectScenes([]multiSceneUser{user1, user2}, "public", "member"))
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+
+	assertJSONEqual(t, string(data), `[
+		{
+			"id": 1,
+			"name": "Ada",
+			"email": "ada@example.com"
+		},
+		{
+			"id": 2,
+			"name": "Grace",
+			"email": "grace@example.com"
+		}
+	]`)
+}
+
 func TestOmitFilterWithMultipleScenesString(t *testing.T) {
 	got := OmitFilter("password|profile.address|orders.status", newMultiSceneUser()).MustJSON()
 

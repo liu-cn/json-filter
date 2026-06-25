@@ -153,6 +153,18 @@ filter.SelectScenes(user, "public", "member")
 filter.SelectScenes(user, "public", "member", "admin")
 ```
 
+`struct` 切片也可以直接传进去，列表接口不需要额外循环：
+
+```go
+users := []User{
+	{ID: 1, Name: "Ada", Email: "ada@example.com"},
+	{ID: 2, Name: "Grace", Email: "grace@example.com"},
+}
+
+fmt.Println(filter.SelectScenes(users, "public", "member"))
+// [{"email":"ada@example.com","id":1,"name":"Ada"},{"email":"grace@example.com","id":2,"name":"Grace"}]
+```
+
 如果使用 `profile.age` 这种精确字段名作为场景，嵌套 struct 的父字段也需要声明对应场景，过滤器才会继续解析子字段：
 
 ```go
@@ -434,6 +446,18 @@ type User struct {
 filter.SelectScenes(user, "public")
 filter.SelectScenes(user, "public", "member")
 filter.SelectScenes(user, "public", "member", "admin")
+```
+
+Slices can be passed directly too, so list responses do not need an extra loop:
+
+```go
+users := []User{
+	{ID: 1, Name: "Ada", Email: "ada@example.com"},
+	{ID: 2, Name: "Grace", Email: "grace@example.com"},
+}
+
+fmt.Println(filter.SelectScenes(users, "public", "member"))
+// [{"email":"ada@example.com","id":1,"name":"Ada"},{"email":"grace@example.com","id":2,"name":"Grace"}]
 ```
 
 ### Tag Syntax
