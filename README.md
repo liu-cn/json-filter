@@ -75,11 +75,11 @@ func main() {
 		Price:      "999.9",
 	}
 
-	article, _ := json.Marshal(filter.Select("article", user))
+	article, _ := json.Marshal(filter.SelectScenes(user, "article"))
 	fmt.Println(string(article))
 	// {"avatar":"avatar","nickname":"boyan","uid":1}
 
-	fmt.Println(filter.Select("profile", user))
+	fmt.Println(filter.SelectScenes(user, "profile"))
 	// {"nickname":"boyan","price":"999.9","sex":1,"vip_end_time":"2026-04-01T00:00:00Z"}
 }
 ```
@@ -88,25 +88,19 @@ func main() {
 
 有两个入口层级：
 
-- `Select(scene, value)` / `Omit(scene, value)`
+- `SelectScenes(value, scenes...)` / `OmitScenes(value, scenes...)`
   直接返回一个可以交给 `json.Marshal`、`gin.Context.JSON` 的值。适合接口直接返回。
-- `SelectFilter(scene, value)` / `OmitFilter(scene, value)`
+- `SelectScenesFilter(value, scenes...)` / `OmitScenesFilter(value, scenes...)`
   返回 typed 的 `Filter`，适合你还想继续取 `JSON`、`Bytes`、`Map`、`Slice`、`Interface`。
 
 推荐约定：
 
-- 直接响应 HTTP：优先用 `Select` / `Omit` / `SelectScenes` / `OmitScenes`
-- 需要继续处理过滤结果：优先用 `SelectFilter` / `OmitFilter` / `SelectScenesFilter` / `OmitScenesFilter`
+- 直接响应 HTTP：优先用 `SelectScenes` / `OmitScenes`
+- 需要继续处理过滤结果：优先用 `SelectScenesFilter` / `OmitScenesFilter`
 
 ### 核心 API
 
 ```go
-filter.Select(scene, value)
-filter.Omit(scene, value)
-
-filter.SelectFilter(scene, value)
-filter.OmitFilter(scene, value)
-
 filter.SelectScenes(value, scenes...)
 filter.OmitScenes(value, scenes...)
 
@@ -133,13 +127,6 @@ filter.OmitScenesFilter(value, scenes...)
 ### 多场景调用
 
 调用侧可以一次传多个场景，语义是“命中任意一个场景就保留/排除”。
-
-```go
-filter.Select("id|name|profile.age", user)
-filter.Omit("password|profile.address", user)
-```
-
-如果你已经有多个场景值，推荐使用 value-first 的可变参数 API：
 
 ```go
 filter.SelectScenes(user, "id", "name", "profile.age")
@@ -218,7 +205,7 @@ Avatar string `json:"avatar,select(profile),func(BuildAvatar)"`
 注意：
 
 - 方法是定义在“当前字段所属的 struct”上的
-- 如果方法是指针接收器，请给 `Select` / `Omit` 传指针
+- 如果方法是指针接收器，请给 `SelectScenes` / `OmitScenes` 传指针
 
 #### `$any`
 
@@ -287,7 +274,7 @@ user := User{
 	Phone:    "18800000000",
 }
 
-fmt.Println(filter.Omit("public", user))
+fmt.Println(filter.OmitScenes(user, "public"))
 // {"name":"boyan"}
 ```
 
@@ -304,17 +291,17 @@ func (i Image) BuildURL() string {
 	return i.Name + i.Ext
 }
 
-fmt.Println(filter.Select("api", Image{
+fmt.Println(filter.SelectScenes(Image{
 	Name: "avatar",
 	Ext:  ".png",
-}))
+}, "api"))
 // {"url":"avatar.png"}
 ```
 
 #### 继续处理过滤结果
 
 ```go
-f := filter.SelectFilter("profile", user)
+f := filter.SelectScenesFilter(user, "profile")
 
 jsonStr, err := f.JSON()
 if err != nil {
@@ -343,7 +330,7 @@ func GetUser(c *gin.Context) {
 		Sex:      1,
 	}
 
-	c.JSON(200, filter.Select("profile", user))
+	c.JSON(200, filter.SelectScenes(user, "profile"))
 }
 ```
 
@@ -365,14 +352,17 @@ func GetUser(c *gin.Context) {
 
 - 当前模块 `go.mod` 为 `go 1.17`
 - 与标准库 `encoding/json` 配合使用
-- 老 API 仍保留兼容：
+- 老 API 仍保留兼容，但新代码建议优先使用 `SelectScenes` / `OmitScenes`：
+  - `Select(scene, value)` / `Omit(scene, value)`
+  - `SelectFilter(scene, value)` / `OmitFilter(scene, value)`
   - `SelectMarshal` / `OmitMarshal`
   - `MustMarshalJSON`
   - `MastMarshalJSON`
 
 新代码建议优先使用：
 
-- `SelectFilter` / `OmitFilter`
+- `SelectScenes` / `OmitScenes`
+- `SelectScenesFilter` / `OmitScenesFilter`
 - `Bytes` / `MustBytes`
 
 ### 更多示例
@@ -408,22 +398,18 @@ type User struct {
 	Sex      int    `json:"sex,select(profile)"`
 }
 
-fmt.Println(filter.Select("article", user))
+fmt.Println(filter.SelectScenes(user, "article"))
 // {"avatar":"avatar","nickname":"boyan","uid":1}
 ```
 
 ### Recommended API
 
-- `Select(scene, value)` / `Omit(scene, value)`
+- `SelectScenes(value, scenes...)` / `OmitScenes(value, scenes...)`
   Use these when you want to pass the result directly to `json.Marshal` or an
   HTTP framework response helper.
-- `SelectFilter(scene, value)` / `OmitFilter(scene, value)`
+- `SelectScenesFilter(value, scenes...)` / `OmitScenesFilter(value, scenes...)`
   Use these when you want the typed `Filter` helpers such as `JSON`, `Bytes`,
   `Map`, `Slice`, or `Interface`.
-- `SelectScenes(value, scenes...)` / `OmitScenes(value, scenes...)`
-  Use these when you already have multiple scenes or field-level selectors.
-- `SelectScenesFilter(value, scenes...)` / `OmitScenesFilter(value, scenes...)`
-  Typed variants for the multi-scene API.
 
 ### Multiple Scenes
 
@@ -431,9 +417,6 @@ Multiple requested scenes use OR semantics: a field is included or excluded when
 any requested scene matches its tag.
 
 ```go
-filter.Select("id|name|profile.age", user)
-filter.Omit("password|profile.address", user)
-
 filter.SelectScenes(user, "id", "name", "profile.age")
 filter.OmitScenes(user, "password", "profile.address")
 ```
@@ -468,6 +451,9 @@ filter.SelectScenes(user, "public", "member", "admin")
 - `json:"-"` is always ignored.
 - Structs, maps, slices, arrays, pointers, interfaces, and nested combinations are supported.
 - Custom `json.Marshaler` and `encoding.TextMarshaler` leaf values are supported.
+- Legacy `Select(scene, value)`, `Omit(scene, value)`, `SelectFilter(scene, value)`,
+  and `OmitFilter(scene, value)` remain supported for compatibility, but new code
+  should prefer the value-first `SelectScenes` and `OmitScenes` APIs.
 
 ### License
 
