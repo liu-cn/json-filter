@@ -108,10 +108,23 @@ func TestSelectScenesAPIWithPermissionLevels(t *testing.T) {
 	}`)
 }
 
-func TestSelectScenesAPIWithDynamicScenes(t *testing.T) {
-	fields := []string{"id", "name", "profile.age", "orders.id"}
+func TestSelectScenesAPIWithDynamicPermissionScenes(t *testing.T) {
+	viewer := struct {
+		IsMember bool
+		IsAdmin  bool
+	}{
+		IsMember: true,
+	}
 
-	data, err := json.Marshal(SelectScenes(newMultiSceneUser(), fields...))
+	scenes := []string{"public"}
+	if viewer.IsMember {
+		scenes = append(scenes, "member")
+	}
+	if viewer.IsAdmin {
+		scenes = append(scenes, "admin")
+	}
+
+	data, err := json.Marshal(SelectScenes(newMultiSceneUser(), scenes...))
 	if err != nil {
 		t.Fatalf("marshal failed: %v", err)
 	}
@@ -119,13 +132,7 @@ func TestSelectScenesAPIWithDynamicScenes(t *testing.T) {
 	assertJSONEqual(t, string(data), `{
 		"id": 1,
 		"name": "Ada",
-		"profile": {
-			"age": 28
-		},
-		"orders": [
-			{"id": 101},
-			{"id": 102}
-		]
+		"email": "ada@example.com"
 	}`)
 }
 

@@ -130,20 +130,6 @@ filter.OmitScenesFilter(value, scenes...)
 
 调用侧可以一次传多个场景，语义是“命中任意一个场景就保留/排除”。
 
-```go
-filter.SelectScenes(user, "id", "name", "profile.age")
-filter.OmitScenes(user, "password", "profile.address")
-```
-
-如果场景/字段来自请求参数、配置或权限计算结果，可以直接展开 `[]string`：
-
-```go
-fields := []string{"id", "name", "profile.age", "orders.id"}
-
-fmt.Println(filter.SelectScenes(user, fields...))
-// {"id":1,"name":"Ada","orders":[{"id":101},{"id":102}],"profile":{"age":28}}
-```
-
 一个常见用法是权限层级：
 
 ```go
@@ -162,6 +148,30 @@ filter.SelectScenes(user, "public", "member")
 
 // 管理员：public + member + admin
 filter.SelectScenes(user, "public", "member", "admin")
+```
+
+实际接口里，场景通常来自登录用户的权限计算结果，可以直接展开 `[]string`：
+
+```go
+type Viewer struct {
+	IsMember bool
+	IsAdmin  bool
+}
+
+func visibleScenes(viewer Viewer) []string {
+	scenes := []string{"public"}
+	if viewer.IsMember {
+		scenes = append(scenes, "member")
+	}
+	if viewer.IsAdmin {
+		scenes = append(scenes, "admin")
+	}
+	return scenes
+}
+
+viewer := Viewer{IsMember: true}
+fmt.Println(filter.SelectScenes(user, visibleScenes(viewer)...))
+// {"email":"ada@example.com","id":1,"name":"Ada"}
 ```
 
 `struct` 切片也可以直接传进去，列表接口不需要额外循环：
@@ -439,21 +449,6 @@ fmt.Println(filter.SelectScenes(user, "article"))
 Multiple requested scenes use OR semantics: a field is included or excluded when
 any requested scene matches its tag.
 
-```go
-filter.SelectScenes(user, "id", "name", "profile.age")
-filter.OmitScenes(user, "password", "profile.address")
-```
-
-When the scenes or field selectors come from request parameters, config, or
-permission logic, pass a `[]string` with variadic expansion:
-
-```go
-fields := []string{"id", "name", "profile.age", "orders.id"}
-
-fmt.Println(filter.SelectScenes(user, fields...))
-// {"id":1,"name":"Ada","orders":[{"id":101},{"id":102}],"profile":{"age":28}}
-```
-
 This is useful for permission tiers:
 
 ```go
@@ -467,6 +462,31 @@ type User struct {
 filter.SelectScenes(user, "public")
 filter.SelectScenes(user, "public", "member")
 filter.SelectScenes(user, "public", "member", "admin")
+```
+
+In real handlers, scenes often come from the current viewer's permissions. Pass
+that `[]string` with variadic expansion:
+
+```go
+type Viewer struct {
+	IsMember bool
+	IsAdmin  bool
+}
+
+func visibleScenes(viewer Viewer) []string {
+	scenes := []string{"public"}
+	if viewer.IsMember {
+		scenes = append(scenes, "member")
+	}
+	if viewer.IsAdmin {
+		scenes = append(scenes, "admin")
+	}
+	return scenes
+}
+
+viewer := Viewer{IsMember: true}
+fmt.Println(filter.SelectScenes(user, visibleScenes(viewer)...))
+// {"email":"ada@example.com","id":1,"name":"Ada"}
 ```
 
 Slices can be passed directly too, so list responses do not need an extra loop:
